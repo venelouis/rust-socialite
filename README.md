@@ -15,22 +15,33 @@
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
 
-## 📦 Supported Providers (v0.1.0)
+## 📦 Supported Providers (v0.3.0)
 
-Official support for 12 major providers:
+Official support for 23 major providers:
 
 1. **Google**
 2. **GitHub**
-3. **Apple** (Sign in with Apple)
-4. **Microsoft / Azure AD**
-5. **Facebook**
-6. **LinkedIn**
-7. **Discord**
-8. **Spotify**
-9. **Twitch**
-10. **GitLab**
-11. **Bitbucket**
-12. **Slack**
+3. **X (Twitter)** (with PKCE support)
+4. **Apple** (Sign in with Apple)
+5. **Microsoft / Azure AD**
+6. **AWS Cognito**
+7. **Auth0**
+8. **Okta**
+9. **Facebook**
+10. **LinkedIn**
+11. **Discord**
+12. **Spotify**
+13. **Twitch**
+14. **GitLab**
+15. **Bitbucket**
+16. **Slack**
+17. **Patreon**
+18. **Zoom**
+19. **Reddit**
+20. **Dropbox**
+21. **Notion**
+22. **Stripe**
+23. **DigitalOcean**
 
 ## 🛠️ Installation
 
@@ -38,7 +49,7 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.1.0"
+rust-socialite = "0.3.0"
 tokio = { version = "1.0", features = ["full"] }
 ```
 
@@ -75,11 +86,28 @@ match github.get_user(code).await {
         println!("Welcome, {}!", user.name);
         println!("Email: {:?}", user.email);
         println!("Avatar: {:?}", user.avatar_url);
-    },
-    Err(e) => {
-        eprintln!("Authentication failed: {}", e);
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to get user".to_string()),
     }
 }
+```
+
+### 🔒 PKCE Support (e.g. X / Twitter)
+
+Some providers like **X (Twitter) v2** strictly require PKCE (Proof Key for Code Exchange). We provide a built-in helper for this.
+
+```rust
+use rust_socialite::pkce::generate_pkce;
+
+// 1. Generate challenge and verifier
+let (code_verifier, code_challenge) = generate_pkce();
+
+// 2. Save `code_verifier` in the user's session or a secure HttpOnly cookie!
+
+// 3. Get the URL with PKCE
+let auth_url = provider.redirect_url_with_pkce(&code_challenge);
+
+// 4. In the callback route, fetch the user using the saved verifier:
+let user = provider.get_user_with_pkce(&code, &code_verifier).await.unwrap();
 ```
 
 ## 🧑‍💻 Full Example with Axum

@@ -13,22 +13,33 @@
 - 🛡️ **Tipagem Segura**: Tratamento de erros robusto com `thiserror` (`SocialiteError`).
 - 🔌 **Agnóstica a Framework**: Funciona com Axum, Actix, Leptos, Dioxus, ou qualquer outro framework.
 
-## 📦 Provedores Suportados (v0.1.0)
+## 📦 Provedores Suportados (v0.3.0)
 
-Já oferecemos suporte oficial para 12 dos maiores provedores do mercado:
+Já oferecemos suporte oficial para 23 dos maiores provedores do mercado:
 
 1. **Google**
 2. **GitHub**
-3. **Apple** (Sign in with Apple)
-4. **Microsoft / Azure AD**
-5. **Facebook**
-6. **LinkedIn**
-7. **Discord**
-8. **Spotify**
-9. **Twitch**
-10. **GitLab**
-11. **Bitbucket**
-12. **Slack**
+3. **X (Twitter)** (com suporte a PKCE)
+4. **Apple** (Sign in with Apple)
+5. **Microsoft / Azure AD**
+6. **AWS Cognito**
+7. **Auth0**
+8. **Okta**
+9. **Facebook**
+10. **LinkedIn**
+11. **Discord**
+12. **Spotify**
+13. **Twitch**
+14. **GitLab**
+15. **Bitbucket**
+16. **Slack**
+17. **Patreon**
+18. **Zoom**
+19. **Reddit**
+20. **Dropbox**
+21. **Notion**
+22. **Stripe**
+23. **DigitalOcean**
 
 ## 🛠️ Instalação
 
@@ -36,7 +47,7 @@ Adicione o pacote ao seu `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.1.0"
+rust-socialite = "0.3.0"
 tokio = { version = "1.0", features = ["full"] }
 ```
 
@@ -73,11 +84,28 @@ match github.get_user(code).await {
         println!("Bem-vindo, {}!", user.name);
         println!("Email: {:?}", user.email);
         println!("Avatar: {:?}", user.avatar_url);
-    },
-    Err(e) => {
-        eprintln!("Falha na autenticação: {}", e);
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Falha ao autenticar usuário".to_string()),
     }
 }
+```
+
+### 🔒 Suporte a PKCE (ex: X / Twitter)
+
+Alguns provedores como o **X (Twitter) v2** exigem estritamente o PKCE (Proof Key for Code Exchange). Fornecemos um ajudante nativo para isso.
+
+```rust
+use rust_socialite::pkce::generate_pkce;
+
+// 1. Gere o challenge e o verifier
+let (code_verifier, code_challenge) = generate_pkce();
+
+// 2. Salve o `code_verifier` na sessão do usuário ou num cookie HttpOnly!
+
+// 3. Pegue a URL de redirecionamento já com o PKCE
+let auth_url = provider.redirect_url_with_pkce(&code_challenge);
+
+// 4. Na rota de callback, busque o usuário usando o verifier salvo:
+let user = provider.get_user_with_pkce(&code, &code_verifier).await.unwrap();
 ```
 
 ## 🧑‍💻 Exemplo Completo com Axum
