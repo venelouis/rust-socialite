@@ -15,9 +15,9 @@
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
 
-## 📦 Supported Providers (v0.3.0)
+## 📦 Supported Providers (v0.4.0)
 
-Official support for 23 major providers:
+Official support for 33 major providers:
 
 1. **Google**
 2. **GitHub**
@@ -42,6 +42,16 @@ Official support for 23 major providers:
 21. **Notion**
 22. **Stripe**
 23. **DigitalOcean**
+24. **TikTok**
+25. **Pinterest**
+26. **Snapchat**
+27. **Instagram**
+28. **Line**
+29. **VK (VKontakte)**
+30. **Yahoo**
+31. **Basecamp**
+32. **Linear**
+33. **Asana**
 
 ## 🛠️ Installation
 
@@ -49,7 +59,7 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.3.0"
+rust-socialite = "0.4.0"
 tokio = { version = "1.0", features = ["full"] }
 ```
 

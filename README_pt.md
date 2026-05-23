@@ -13,9 +13,9 @@
 - 🛡️ **Tipagem Segura**: Tratamento de erros robusto com `thiserror` (`SocialiteError`).
 - 🔌 **Agnóstica a Framework**: Funciona com Axum, Actix, Leptos, Dioxus, ou qualquer outro framework.
 
-## 📦 Provedores Suportados (v0.3.0)
+## 📦 Provedores Suportados (v0.4.0)
 
-Já oferecemos suporte oficial para 23 dos maiores provedores do mercado:
+Já oferecemos suporte oficial para incríveis 33 dos maiores provedores do mercado:
 
 1. **Google**
 2. **GitHub**
@@ -40,6 +40,16 @@ Já oferecemos suporte oficial para 23 dos maiores provedores do mercado:
 21. **Notion**
 22. **Stripe**
 23. **DigitalOcean**
+24. **TikTok**
+25. **Pinterest**
+26. **Snapchat**
+27. **Instagram**
+28. **Line**
+29. **VK (VKontakte)**
+30. **Yahoo**
+31. **Basecamp**
+32. **Linear**
+33. **Asana**
 
 ## 🛠️ Instalação
 
@@ -47,7 +57,7 @@ Adicione o pacote ao seu `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.3.0"
+rust-socialite = "0.4.0"
 tokio = { version = "1.0", features = ["full"] }
 ```
 

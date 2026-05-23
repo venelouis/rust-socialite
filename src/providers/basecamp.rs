@@ -1,0 +1,72 @@
+use crate::provider::Provider;
+use crate::user::SocialiteUser;
+use crate::error::SocialiteError;
+use async_trait::async_trait;
+use reqwest::Client;
+use serde_json::Value;
+
+pub struct BasecampProvider {
+    client_id: String,
+    client_secret: String,
+    redirect_url: String,
+    http_client: Client,
+}
+
+impl BasecampProvider {
+    pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
+        Self {
+            client_id,
+            client_secret,
+            redirect_url,
+            http_client: Client::new(),
+        }
+    }
+}
+
+#[async_trait]
+impl Provider for BasecampProvider {
+    fn redirect_url(&self) -> String {
+        format!(
+            "https://launchpad.37signals.com/authorization/new?type=web_server&client_id={}&redirect_uri={}",
+            self.client_id, self.redirect_url
+        )
+    }
+
+    async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+        let token_res = self.http_client.post("https://launchpad.37signals.com/authorization/token?type=web_server")
+            .form(&[
+                ("client_id", self.client_id.as_str()),
+                ("client_secret", self.client_secret.as_str()),
+                ("code", auth_code),
+                ("redirect_uri", self.redirect_url.as_str()),
+            ])
+            .send()
+            .await?
+            .json::<Value>()
+            .await?;
+
+        let access_token = token_res["access_token"]
+            .as_str()
+            .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
+
+        let user_res = self.http_client.get("https://launchpad.37signals.com/authorization.json")
+            .header("Authorization", format!("Bearer {}", access_token))
+            .send()
+            .await?
+            .json::<Value>()
+            .await?;
+
+        let identity = &user_res["identity"];
+        let first_name = identity["first_name"].as_str().unwrap_or("");
+        let last_name = identity["last_name"].as_str().unwrap_or("");
+        let name = format!("{} {}", first_name, last_name).trim().to_string();
+
+        Ok(SocialiteUser {
+            id: identity["id"].as_i64().map(|i| i.to_string()).unwrap_or_else(|| "".to_string()),
+            name,
+            email: identity["email_address"].as_str().map(|s| s.to_string()),
+            avatar_url: None, // Basecamp API doesn't standardly expose an avatar via launchpad
+            raw_data: user_res,
+        })
+    }
+}
