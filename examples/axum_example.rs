@@ -4,7 +4,6 @@ use axum::{
     routing::get,
 };
 use rust_socialite::{extractors::AuthCallback, provider::Provider, providers::GoogleProvider};
-use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
