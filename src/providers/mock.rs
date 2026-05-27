@@ -29,8 +29,8 @@ impl MockProvider {
 
 #[async_trait]
 impl Provider for MockProvider {
-    fn redirect_url(&self) -> String {
-        self.mocked_url.clone()
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        Ok(self.mocked_url.clone())
     }
 
     async fn get_user(

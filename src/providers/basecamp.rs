@@ -8,8 +8,8 @@ crate::define_provider!(BasecampProvider);
 
 #[async_trait]
 impl Provider for BasecampProvider {
-    fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://launchpad.37signals.com/authorization/new").unwrap();
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        let mut url = url::Url::parse("https://launchpad.37signals.com/authorization/new")?;
         url.query_pairs_mut().append_pair("type", "web_server");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
@@ -28,7 +28,7 @@ impl Provider for BasecampProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

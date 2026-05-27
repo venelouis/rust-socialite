@@ -7,10 +7,10 @@ crate::define_provider!(MicrosoftProvider, "User.Read");
 
 #[async_trait]
 impl Provider for MicrosoftProvider {
-    fn redirect_url(&self) -> String {
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
         let mut url =
             url::Url::parse("https://login.microsoftonline.com/common/oauth2/v2.0/authorize")
-                .unwrap();
+                ?;
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()
@@ -29,7 +29,7 @@ impl Provider for MicrosoftProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(

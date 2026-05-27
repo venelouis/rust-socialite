@@ -8,7 +8,7 @@ crate::define_provider!(GoogleProvider, "openid", "profile", "email");
 
 #[async_trait]
 impl Provider for GoogleProvider {
-    fn redirect_url(&self) -> String {
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
         let mut params = form_urlencoded::Serializer::new(String::new());
         params
             .append_pair("client_id", &self.client_id)
@@ -29,10 +29,10 @@ impl Provider for GoogleProvider {
             params.append_pair("code_challenge_method", "S256");
         }
 
-        format!(
+        Ok(format!(
             "https://accounts.google.com/o/oauth2/v2/auth?{}",
             params.finish()
-        )
+        ))
     }
 
     async fn get_user(

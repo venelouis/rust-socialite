@@ -25,7 +25,7 @@ async fn home() -> Html<&'static str> {
 
 async fn login() -> impl IntoResponse {
     let provider = get_provider();
-    let url = provider.redirect_url_with_state("some_random_state_xyz");
+    let url = provider.redirect_url_with_state("some_random_state_xyz").unwrap();
 
     // Redirect to Google
     axum::response::Redirect::to(&url)

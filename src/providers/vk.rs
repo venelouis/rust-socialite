@@ -8,8 +8,8 @@ crate::define_provider!(VkProvider);
 
 #[async_trait]
 impl Provider for VkProvider {
-    fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://oauth.vk.com/authorize").unwrap();
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        let mut url = url::Url::parse("https://oauth.vk.com/authorize")?;
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut().append_pair("display", "page");
@@ -30,7 +30,7 @@ impl Provider for VkProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

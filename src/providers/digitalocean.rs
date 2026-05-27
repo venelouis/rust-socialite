@@ -8,8 +8,8 @@ crate::define_provider!(DigitaloceanProvider, "read");
 
 #[async_trait]
 impl Provider for DigitaloceanProvider {
-    fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://cloud.digitalocean.com/v1/oauth/authorize").unwrap();
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        let mut url = url::Url::parse("https://cloud.digitalocean.com/v1/oauth/authorize")?;
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()
@@ -28,7 +28,7 @@ impl Provider for DigitaloceanProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

@@ -8,8 +8,8 @@ crate::define_provider!(XProvider, "users.read", "tweet.read");
 
 #[async_trait]
 impl Provider for XProvider {
-    fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://twitter.com/i/oauth2/authorize").unwrap();
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        let mut url = url::Url::parse("https://twitter.com/i/oauth2/authorize")?;
         url.query_pairs_mut().append_pair("response_type", "code");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
@@ -29,7 +29,7 @@ impl Provider for XProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(&self, _auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

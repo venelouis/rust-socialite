@@ -7,8 +7,8 @@ crate::define_provider!(GitlabProvider, "read_user");
 
 #[async_trait]
 impl Provider for GitlabProvider {
-    fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://gitlab.com/oauth/authorize").unwrap();
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        let mut url = url::Url::parse("https://gitlab.com/oauth/authorize")?;
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()
@@ -27,7 +27,7 @@ impl Provider for GitlabProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(

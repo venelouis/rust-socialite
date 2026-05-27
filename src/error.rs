@@ -18,6 +18,9 @@ pub enum SocialiteError {
     #[error("System time error: {0}")]
     Time(#[from] std::time::SystemTimeError),
 
+    #[error("URL parsing failed: {0}")]
+    Url(#[from] url::ParseError),
+
     #[error("Missing token or unexpected response: {0}")]
     Token(String),
 

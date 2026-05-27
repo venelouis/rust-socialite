@@ -57,9 +57,9 @@ impl OktaProvider {
 
 #[async_trait]
 impl Provider for OktaProvider {
-    fn redirect_url(&self) -> String {
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
         let mut url = url::Url::parse(&format!("https://{}/oauth2/v1/authorize", self.domain))
-            .expect("Invalid Okta domain");
+            ?;
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()
@@ -78,7 +78,7 @@ impl Provider for OktaProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

@@ -55,7 +55,7 @@ async fn login_google() -> Redirect {
         GOOGLE_CLIENT_SECRET.to_string(),
         "http://localhost:3000/auth/google/callback".to_string(),
     );
-    Redirect::to(&provider.redirect_url())
+    Redirect::to(&provider.redirect_url().unwrap())
 }
 
 async fn callback_google(Query(query): Query<AuthRequest>) -> impl IntoResponse {
@@ -83,7 +83,7 @@ async fn login_github() -> Redirect {
         GITHUB_CLIENT_SECRET.to_string(),
         "http://localhost:3000/auth/github/callback".to_string(),
     );
-    Redirect::to(&provider.redirect_url())
+    Redirect::to(&provider.redirect_url().unwrap())
 }
 
 async fn callback_github(Query(query): Query<AuthRequest>) -> impl IntoResponse {

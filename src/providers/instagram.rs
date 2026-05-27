@@ -8,8 +8,8 @@ crate::define_provider!(InstagramProvider, "user_profile");
 
 #[async_trait]
 impl Provider for InstagramProvider {
-    fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://api.instagram.com/oauth/authorize").unwrap();
+    fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+        let mut url = url::Url::parse("https://api.instagram.com/oauth/authorize")?;
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()
@@ -28,7 +28,7 @@ impl Provider for InstagramProvider {
             url.query_pairs_mut()
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        Ok(url.into())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
