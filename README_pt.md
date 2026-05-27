@@ -13,7 +13,7 @@
 - 🛡️ **Tipagem Segura**: Tratamento de erros robusto com `thiserror` (`SocialiteError`).
 - 🔌 **Agnóstica a Framework**: Funciona com Axum, Actix, Leptos, Dioxus, ou qualquer outro framework.
 
-## 📦 Provedores Suportados (v0.4.0)
+## 📦 Provedores Suportados (v0.4.1)
 
 Já oferecemos suporte oficial para incríveis 33 dos maiores provedores do mercado:
 
@@ -57,8 +57,8 @@ Adicione o pacote ao seu `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.4.0"
-tokio = { version = "1.0", features = ["full"] }
+rust-socialite = "0.4.1"
+tokio = { version = "1.52", features = ["full"] }
 ```
 
 ## 🚀 Como Usar

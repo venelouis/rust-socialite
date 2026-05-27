@@ -15,7 +15,7 @@
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
 
-## 📦 Supported Providers (v0.4.0)
+## 📦 Supported Providers (v0.4.1)
 
 Official support for 33 major providers:
 
@@ -59,8 +59,8 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.4.0"
-tokio = { version = "1.0", features = ["full"] }
+rust-socialite = "0.4.1"
+tokio = { version = "1.52", features = ["full"] }
 ```
 
 ## 🚀 Quick Start
