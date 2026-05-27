@@ -9,26 +9,26 @@ crate::define_provider!(SpotifyProvider, "user-read-private", "user-read-email")
 #[async_trait]
 impl Provider for SpotifyProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://accounts.spotify.com/authorize").unwrap();
-        url.query_pairs_mut()
+        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params
             .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut()
+        params
             .append_pair("redirect_uri", &self.redirect_url);
-        url.query_pairs_mut().append_pair("response_type", "code");
+        params.append_pair("response_type", "code");
         if !self.scopes.is_empty() {
-            url.query_pairs_mut()
+            params
                 .append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
-            url.query_pairs_mut().append_pair("state", state);
+            params.append_pair("state", state);
         }
 
         if let Some(pkce) = &self.pkce_challenge {
-            url.query_pairs_mut().append_pair("code_challenge", pkce);
-            url.query_pairs_mut()
+            params.append_pair("code_challenge", pkce);
+            params
                 .append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        format!("https://accounts.spotify.com/authorize?{}", params.finish())
     }
 
     async fn get_user(
