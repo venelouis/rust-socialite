@@ -62,22 +62,25 @@ impl CognitoProvider {
 #[async_trait]
 impl Provider for CognitoProvider {
     fn redirect_url(&self) -> String {
-        let mut query = url::form_urlencoded::Serializer::new(String::new());
-        query.append_pair("client_id", &self.client_id);
-        query.append_pair("redirect_uri", &self.redirect_url);
-        query.append_pair("response_type", "code");
+        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params
+            .append_pair("client_id", &self.client_id)
+            .append_pair("redirect_uri", &self.redirect_url)
+            .append_pair("response_type", "code");
+
         if !self.scopes.is_empty() {
-            query.append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
-            query.append_pair("state", state);
+            params.append_pair("state", state);
         }
 
         if let Some(pkce) = &self.pkce_challenge {
-            query.append_pair("code_challenge", pkce);
-            query.append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge", pkce);
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("{}/oauth2/authorize?{}", self.domain, query.finish())
+
+        format!("{}/oauth2/authorize?{}", self.domain, params.finish())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
