@@ -8,7 +8,8 @@ crate::define_provider!(FacebookProvider, "email", "public_profile");
 #[async_trait]
 impl Provider for FacebookProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://www.facebook.com/v19.0/dialog/oauth").unwrap();
+        let mut url = url::Url::parse("https://www.facebook.com/v19.0/dialog/oauth")
+            .expect("Invalid redirect URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

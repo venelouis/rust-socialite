@@ -8,7 +8,8 @@ crate::define_provider!(SlackProvider);
 #[async_trait]
 impl Provider for SlackProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://slack.com/oauth/v2/authorize").unwrap();
+        let mut url =
+            url::Url::parse("https://slack.com/oauth/v2/authorize").expect("Invalid redirect URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

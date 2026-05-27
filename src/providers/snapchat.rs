@@ -9,8 +9,8 @@ crate::define_provider!(SnapchatProvider, "snapchat-api.read");
 #[async_trait]
 impl Provider for SnapchatProvider {
     fn redirect_url(&self) -> String {
-        let mut url =
-            url::Url::parse("https://accounts.snapchat.com/login/oauth2/authorize").unwrap();
+        let mut url = url::Url::parse("https://accounts.snapchat.com/login/oauth2/authorize")
+            .expect("Invalid redirect URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

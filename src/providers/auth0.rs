@@ -43,7 +43,7 @@ impl Auth0Provider {
 #[async_trait]
 impl Provider for Auth0Provider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://{}/authorize").unwrap();
+        let mut url = url::Url::parse("https://{}/authorize").expect("Invalid redirect URL");
         url.query_pairs_mut().append_pair("client_id", &self.domain);
         url.query_pairs_mut()
             .append_pair("redirect_uri", &self.client_id);

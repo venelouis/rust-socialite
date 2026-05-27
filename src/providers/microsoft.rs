@@ -10,7 +10,7 @@ impl Provider for MicrosoftProvider {
     fn redirect_url(&self) -> String {
         let mut url =
             url::Url::parse("https://login.microsoftonline.com/common/oauth2/v2.0/authorize")
-                .unwrap();
+                .expect("Invalid redirect URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

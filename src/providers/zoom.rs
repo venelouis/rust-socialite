@@ -10,7 +10,8 @@ crate::define_provider!(ZoomProvider);
 #[async_trait]
 impl Provider for ZoomProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://zoom.us/oauth/authorize").unwrap();
+        let mut url =
+            url::Url::parse("https://zoom.us/oauth/authorize").expect("Invalid redirect URL");
         url.query_pairs_mut().append_pair("response_type", "code");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);

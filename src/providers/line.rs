@@ -9,7 +9,8 @@ crate::define_provider!(LineProvider, "profile", "openid", "email");
 #[async_trait]
 impl Provider for LineProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://access.line.me/oauth2/v2.1/authorize").unwrap();
+        let mut url = url::Url::parse("https://access.line.me/oauth2/v2.1/authorize")
+            .expect("Invalid redirect URL");
         url.query_pairs_mut().append_pair("response_type", "code");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);

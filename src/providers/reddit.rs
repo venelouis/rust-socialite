@@ -10,7 +10,8 @@ crate::define_provider!(RedditProvider, "identity");
 #[async_trait]
 impl Provider for RedditProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://www.reddit.com/api/v1/authorize").unwrap();
+        let mut url = url::Url::parse("https://www.reddit.com/api/v1/authorize")
+            .expect("Invalid redirect URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut().append_pair("response_type", "code");

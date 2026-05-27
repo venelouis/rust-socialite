@@ -9,7 +9,8 @@ crate::define_provider!(InstagramProvider, "user_profile");
 #[async_trait]
 impl Provider for InstagramProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://api.instagram.com/oauth/authorize").unwrap();
+        let mut url = url::Url::parse("https://api.instagram.com/oauth/authorize")
+            .expect("Invalid redirect URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()
