@@ -64,7 +64,7 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "5.0.0"
+rust-socialite = "5.0.1"
 tokio = { version = "1.52", features = ["full"] }
 ```
 

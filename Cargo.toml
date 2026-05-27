@@ -1,6 +1,6 @@
 [package]
 name = "rust-socialite"
-version = "5.0.0"
+version = "5.0.1"
 edition = "2024"
 description = "OAuth2 Social Login for Rust web frameworks, inspired by Laravel Socialite."
 license = "MIT"
