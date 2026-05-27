@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
@@ -19,7 +19,10 @@ impl PinterestProvider {
             client_id,
             client_secret,
             redirect_url,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -44,8 +47,7 @@ impl Provider for PinterestProvider {
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -55,8 +57,7 @@ impl Provider for PinterestProvider {
 
         let user_res = self.http_client.get("https://api.pinterest.com/v5/user_account")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -69,3 +70,4 @@ impl Provider for PinterestProvider {
         })
     }
 }
+

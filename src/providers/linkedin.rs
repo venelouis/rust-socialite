@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use reqwest::Client;
@@ -17,7 +17,10 @@ impl LinkedinProvider {
             client_id,
             client_secret,
             redirect_url,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -40,8 +43,7 @@ impl Provider for LinkedinProvider {
                 ("client_secret", self.client_secret.as_str()),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -49,8 +51,7 @@ impl Provider for LinkedinProvider {
 
         let user_res = self.http_client.get("https://api.linkedin.com/v2/userinfo")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -63,3 +64,4 @@ impl Provider for LinkedinProvider {
         })
     }
 }
+

@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
@@ -18,7 +18,10 @@ impl VkProvider {
             client_id,
             client_secret,
             redirect_url,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -37,8 +40,7 @@ impl Provider for VkProvider {
             "https://oauth.vk.com/access_token?client_id={}&client_secret={}&redirect_uri={}&code={}",
             self.client_id, self.client_secret, self.redirect_url, auth_code
         ))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -58,8 +60,7 @@ impl Provider for VkProvider {
             "https://api.vk.com/method/users.get?user_ids={}&fields=photo_200&v=5.131&access_token={}",
             user_id, access_token
         ))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -77,3 +78,4 @@ impl Provider for VkProvider {
         })
     }
 }
+

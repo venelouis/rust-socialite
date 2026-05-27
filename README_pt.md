@@ -99,6 +99,21 @@ match github.get_user(code).await {
 }
 ```
 
+### 🛡️ Proteção contra CSRF (Parâmetro State)
+
+Para prevenir ataques de falsificação de solicitações (CSRF), você deve gerar uma string aleatória segura, salvá-la em uma sessão/cookie e passá-la para o provedor.
+
+```rust
+// 1. Gere uma string aleatória para o state e salve na sessão
+let state = "string_aleatoria_segura";
+
+// 2. Pegue a URL de autorização com o parâmetro state
+let url = github.redirect_url_with_state(state);
+// return Redirect::temporary(&url);
+
+// 3. Na rota de callback, verifique se o `state` recebido na query string é igual ao da sua sessão!
+```
+
 ### 🔒 Suporte a PKCE (ex: X / Twitter)
 
 Alguns provedores como o **X (Twitter) v2** exigem estritamente o PKCE (Proof Key for Code Exchange). Fornecemos um ajudante nativo para isso.

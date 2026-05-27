@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
@@ -22,7 +22,10 @@ impl CognitoProvider {
             client_secret,
             redirect_url,
             domain: clean_domain,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -45,8 +48,7 @@ impl Provider for CognitoProvider {
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -56,8 +58,7 @@ impl Provider for CognitoProvider {
 
         let user_res = self.http_client.get(format!("{}/oauth2/userInfo", self.domain))
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -70,3 +71,4 @@ impl Provider for CognitoProvider {
         })
     }
 }
+

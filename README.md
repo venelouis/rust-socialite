@@ -101,6 +101,21 @@ match github.get_user(code).await {
 }
 ```
 
+### 🛡️ CSRF Protection (State Parameter)
+
+To prevent Cross-Site Request Forgery (CSRF) attacks, you should generate a secure random string, save it in a session/cookie, and pass it to the provider.
+
+```rust
+// 1. Generate a random state string and save it in the session
+let state = "random_secure_string";
+
+// 2. Get the authorization URL with the state parameter
+let url = github.redirect_url_with_state(state);
+// return Redirect::temporary(&url);
+
+// 3. In the callback route, verify if the query param `state` matches your session!
+```
+
 ### 🔒 PKCE Support (e.g. X / Twitter)
 
 Some providers like **X (Twitter) v2** strictly require PKCE (Proof Key for Code Exchange). We provide a built-in helper for this.

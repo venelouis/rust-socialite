@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
@@ -18,7 +18,10 @@ impl StripeProvider {
             client_id,
             client_secret,
             redirect_url,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -39,8 +42,7 @@ impl Provider for StripeProvider {
                 ("client_secret", self.client_secret.as_str()),
                 ("code", auth_code),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -55,8 +57,7 @@ impl Provider for StripeProvider {
         // Fetch account details using the connected account ID
         let user_res = self.http_client.get(format!("https://api.stripe.com/v1/accounts/{}", stripe_user_id))
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -73,3 +74,4 @@ impl Provider for StripeProvider {
         })
     }
 }
+

@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use reqwest::Client;
@@ -17,7 +17,10 @@ impl TwitchProvider {
             client_id,
             client_secret,
             redirect_url,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -40,8 +43,7 @@ impl Provider for TwitchProvider {
                 ("grant_type", "authorization_code"),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -50,8 +52,7 @@ impl Provider for TwitchProvider {
         let user_res = self.http_client.get("https://api.twitch.tv/helix/users")
             .header("Authorization", format!("Bearer {}", access_token))
             .header("Client-Id", self.client_id.as_str())
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -66,3 +67,4 @@ impl Provider for TwitchProvider {
         })
     }
 }
+

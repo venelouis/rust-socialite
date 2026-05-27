@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use reqwest::Client;
@@ -17,7 +17,10 @@ impl BitbucketProvider {
             client_id,
             client_secret,
             redirect_url,
-            http_client: Client::new(),
+            http_client: Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .unwrap_or_default(),
         }
     }
 }
@@ -39,8 +42,7 @@ impl Provider for BitbucketProvider {
                 ("code", auth_code),
                 ("grant_type", "authorization_code"),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -48,15 +50,13 @@ impl Provider for BitbucketProvider {
 
         let user_res = self.http_client.get("https://api.bitbucket.org/2.0/user")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
         let emails_res = self.http_client.get("https://api.bitbucket.org/2.0/user/emails")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -74,3 +74,4 @@ impl Provider for BitbucketProvider {
         })
     }
 }
+
