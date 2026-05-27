@@ -58,27 +58,22 @@ impl OktaProvider {
 #[async_trait]
 impl Provider for OktaProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse(&format!("https://{}/oauth2/v1/authorize", self.domain))
-            .expect("Invalid Okta domain");
-        url.query_pairs_mut()
-            .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut()
-            .append_pair("redirect_uri", &self.redirect_url);
-        url.query_pairs_mut().append_pair("response_type", "code");
+        let mut query = url::form_urlencoded::Serializer::new(String::new());
+        query.append_pair("client_id", &self.client_id);
+        query.append_pair("redirect_uri", &self.redirect_url);
+        query.append_pair("response_type", "code");
         if !self.scopes.is_empty() {
-            url.query_pairs_mut()
-                .append_pair("scope", &self.scopes.join(" "));
+            query.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
-            url.query_pairs_mut().append_pair("state", state);
+            query.append_pair("state", state);
         }
 
         if let Some(pkce) = &self.pkce_challenge {
-            url.query_pairs_mut().append_pair("code_challenge", pkce);
-            url.query_pairs_mut()
-                .append_pair("code_challenge_method", "S256");
+            query.append_pair("code_challenge", pkce);
+            query.append_pair("code_challenge_method", "S256");
         }
-        url.into()
+        format!("https://{}/oauth2/v1/authorize?{}", self.domain, query.finish())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
