@@ -82,3 +82,58 @@ pub trait Provider: Send + Sync {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use async_trait::async_trait;
+
+    struct DummyProvider {
+        base_url: String,
+    }
+
+    #[async_trait]
+    impl Provider for DummyProvider {
+        fn redirect_url(&self) -> String {
+            self.base_url.clone()
+        }
+
+        async fn get_user(
+            &self,
+            _auth_code: &str,
+        ) -> Result<crate::user::SocialiteUser, crate::error::SocialiteError> {
+            unimplemented!()
+        }
+
+        async fn get_user_from_token(
+            &self,
+            _access_token: &str,
+        ) -> Result<crate::user::SocialiteUser, crate::error::SocialiteError> {
+            unimplemented!()
+        }
+    }
+
+    #[test]
+    fn test_redirect_url_with_pkce_and_state_no_query() {
+        let provider = DummyProvider {
+            base_url: "https://example.com/auth".to_string(),
+        };
+        let url = provider.redirect_url_with_pkce_and_state("my_challenge", "my_state");
+        assert_eq!(
+            url,
+            "https://example.com/auth?code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
+        );
+    }
+
+    #[test]
+    fn test_redirect_url_with_pkce_and_state_with_query() {
+        let provider = DummyProvider {
+            base_url: "https://example.com/auth?client_id=123".to_string(),
+        };
+        let url = provider.redirect_url_with_pkce_and_state("my_challenge", "my_state");
+        assert_eq!(
+            url,
+            "https://example.com/auth?client_id=123&code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
+        );
+    }
+}
