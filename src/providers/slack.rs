@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
@@ -29,8 +29,7 @@ impl Provider for SlackProvider {
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -46,8 +45,7 @@ impl Provider for SlackProvider {
     async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
         let user_res = self.http_client.get("https://slack.com/api/users.identity")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 

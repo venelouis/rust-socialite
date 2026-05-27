@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
@@ -30,8 +30,7 @@ impl Provider for LinkedinProvider {
                 ("client_secret", self.client_secret.as_str()),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -47,8 +46,7 @@ impl Provider for LinkedinProvider {
     async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
         let user_res = self.http_client.get("https://api.linkedin.com/v2/userinfo")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 

@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
@@ -36,8 +36,7 @@ impl Provider for RedditProvider {
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -56,8 +55,7 @@ impl Provider for RedditProvider {
         let user_res = self.http_client.get("https://oauth.reddit.com/api/v1/me")
             .header("Authorization", format!("Bearer {}", access_token))
             .header("User-Agent", "rust-socialite/0.2.1")
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 

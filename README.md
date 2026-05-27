@@ -15,7 +15,7 @@
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
 
-## 📦 Supported Providers (v0.4.0)
+## 📦 Supported Providers (v0.4.1)
 
 Official support for 33 major providers:
 
@@ -59,8 +59,8 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.4.0"
-tokio = { version = "1.0", features = ["full"] }
+rust-socialite = "0.4.1"
+tokio = { version = "1.52", features = ["full"] }
 ```
 
 ## 🚀 Quick Start
@@ -99,6 +99,21 @@ match github.get_user(code).await {
         Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to get user".to_string()),
     }
 }
+```
+
+### 🛡️ CSRF Protection (State Parameter)
+
+To prevent Cross-Site Request Forgery (CSRF) attacks, you should generate a secure random string, save it in a session/cookie, and pass it to the provider.
+
+```rust
+// 1. Generate a random state string and save it in the session
+let state = "random_secure_string";
+
+// 2. Get the authorization URL with the state parameter
+let url = github.redirect_url_with_state(state);
+// return Redirect::temporary(&url);
+
+// 3. In the callback route, verify if the query param `state` matches your session!
 ```
 
 ### 🔒 PKCE Support (e.g. X / Twitter)

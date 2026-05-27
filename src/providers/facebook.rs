@@ -1,4 +1,4 @@
-use crate::provider::Provider;
+﻿use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
@@ -28,8 +28,7 @@ impl Provider for FacebookProvider {
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -47,8 +46,7 @@ impl Provider for FacebookProvider {
             "https://graph.facebook.com/v19.0/me?fields=id,name,email,picture.width(500).height(500)&access_token={}",
             access_token
         ))
-            .send()
-            .await?
+            .send().await?.error_for_status()?
             .json::<Value>()
             .await?;
 
