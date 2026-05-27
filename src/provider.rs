@@ -82,3 +82,48 @@ pub trait Provider: Send + Sync {
         ))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::SocialiteError;
+    use crate::user::SocialiteUser;
+    use async_trait::async_trait;
+
+    struct DummyProvider;
+
+    #[async_trait]
+    impl Provider for DummyProvider {
+        fn redirect_url(&self) -> String {
+            "".to_string()
+        }
+
+        async fn get_user(
+            &self,
+            _auth_code: &str,
+        ) -> Result<SocialiteUser, SocialiteError> {
+            unimplemented!()
+        }
+
+        async fn get_user_from_token(
+            &self,
+            _access_token: &str,
+        ) -> Result<SocialiteUser, SocialiteError> {
+            unimplemented!()
+        }
+    }
+
+    #[tokio::test]
+    async fn test_default_revoke_token() {
+        let provider = DummyProvider;
+        let result = provider.revoke_token("some_token").await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            SocialiteError::Token(msg) => {
+                assert_eq!(msg, "Token revocation is not supported by this provider");
+            }
+            _ => panic!("Expected SocialiteError::Token"),
+        }
+    }
+}
