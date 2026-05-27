@@ -1,12 +1,12 @@
-﻿use crate::provider::Provider;
+use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
-use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use base64::Engine;
+use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::time::{SystemTime, UNIX_EPOCH};
-use base64::Engine;
 
 pub struct AppleProvider {
     client_id: String,
@@ -17,6 +17,7 @@ pub struct AppleProvider {
     http_client: Client,
     scopes: Vec<String>,
     state: Option<String>,
+    pkce_challenge: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -47,7 +48,23 @@ impl AppleProvider {
             http_client: Client::new(),
             scopes: vec!["name".to_string(), "email".to_string()],
             state: None,
+            pkce_challenge: None,
         }
+    }
+
+    pub fn with_scopes(mut self, scopes: &[&str]) -> Self {
+        self.scopes = scopes.iter().map(|s| s.to_string()).collect();
+        self
+    }
+
+    pub fn with_state(mut self, state: &str) -> Self {
+        self.state = Some(state.to_string());
+        self
+    }
+
+    pub fn with_pkce(mut self, challenge: &str) -> Self {
+        self.pkce_challenge = Some(challenge.to_string());
+        self
     }
 
     fn generate_client_secret(&self) -> Result<String, crate::error::SocialiteError> {
@@ -74,23 +91,38 @@ impl AppleProvider {
 impl Provider for AppleProvider {
     fn redirect_url(&self) -> String {
         let mut url = url::Url::parse("https://appleid.apple.com/auth/authorize").unwrap();
-        url.query_pairs_mut().append_pair("client_id", &self.client_id);
-        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        url.query_pairs_mut()
+            .append_pair("client_id", &self.client_id);
+        url.query_pairs_mut()
+            .append_pair("redirect_uri", &self.redirect_url);
         url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut().append_pair("response_mode", "form_post");
+        url.query_pairs_mut()
+            .append_pair("response_mode", "form_post");
         if !self.scopes.is_empty() {
-            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+            url.query_pairs_mut()
+                .append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             url.query_pairs_mut().append_pair("state", state);
         }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            url.query_pairs_mut().append_pair("code_challenge", pkce);
+            url.query_pairs_mut()
+                .append_pair("code_challenge_method", "S256");
+        }
         url.into()
     }
 
-    async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    async fn get_user(
+        &self,
+        auth_code: &str,
+    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
         let client_secret = self.generate_client_secret()?;
 
-        let token_res = self.http_client.post("https://appleid.apple.com/auth/token")
+        let token_res = self
+            .http_client
+            .post("https://appleid.apple.com/auth/token")
             .form(&[
                 ("client_id", self.client_id.as_str()),
                 ("client_secret", client_secret.as_str()),
@@ -98,28 +130,39 @@ impl Provider for AppleProvider {
                 ("grant_type", "authorization_code"),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
         // Apple returns user data inside an "id_token" (JWT)
-        let id_token_str = token_res["id_token"].as_str().ok_or_else(|| crate::error::SocialiteError::Token("Failed to get id_token from Apple".to_string()))?;
+        let id_token_str = token_res["id_token"].as_str().ok_or_else(|| {
+            crate::error::SocialiteError::Token("Failed to get id_token from Apple".to_string())
+        })?;
         let access_token = token_res["access_token"].as_str().unwrap_or("").to_string();
-        
+
         let mut user = self.get_user_from_token(id_token_str).await?;
         user.access_token = access_token;
         user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
-        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
         Ok(user)
     }
 
     /// For Apple, `access_token` parameter should actually be the `id_token` JWT string.
-    async fn get_user_from_token(&self, id_token_str: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    async fn get_user_from_token(
+        &self,
+        id_token_str: &str,
+    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
         let parts: Vec<&str> = id_token_str.split('.').collect();
         if parts.len() != 3 {
-            return Err(crate::error::SocialiteError::Provider("Invalid id_token format".to_string()));
+            return Err(crate::error::SocialiteError::Provider(
+                "Invalid id_token format".to_string(),
+            ));
         }
-        
+
         let payload_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(parts[1])?;
         let payload: Value = serde_json::from_slice(&payload_bytes)?;
 
@@ -135,4 +178,3 @@ impl Provider for AppleProvider {
         })
     }
 }
-

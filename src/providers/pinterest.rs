@@ -1,9 +1,9 @@
-﻿use crate::provider::Provider;
-use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
+use crate::provider::Provider;
+use crate::user::SocialiteUser;
 use async_trait::async_trait;
+use base64::{Engine as _, engine::general_purpose};
 use serde_json::Value;
-use base64::{engine::general_purpose, Engine as _};
 
 crate::define_provider!(PinterestProvider, "user_accounts:read");
 
@@ -11,14 +11,23 @@ crate::define_provider!(PinterestProvider, "user_accounts:read");
 impl Provider for PinterestProvider {
     fn redirect_url(&self) -> String {
         let mut url = url::Url::parse("https://www.pinterest.com/oauth/").unwrap();
-        url.query_pairs_mut().append_pair("client_id", &self.client_id);
-        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        url.query_pairs_mut()
+            .append_pair("client_id", &self.client_id);
+        url.query_pairs_mut()
+            .append_pair("redirect_uri", &self.redirect_url);
         url.query_pairs_mut().append_pair("response_type", "code");
         if !self.scopes.is_empty() {
-            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+            url.query_pairs_mut()
+                .append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             url.query_pairs_mut().append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            url.query_pairs_mut().append_pair("code_challenge", pkce);
+            url.query_pairs_mut()
+                .append_pair("code_challenge_method", "S256");
         }
         url.into()
     }
@@ -27,14 +36,18 @@ impl Provider for PinterestProvider {
         let credentials = format!("{}:{}", self.client_id, self.client_secret);
         let encoded_credentials = general_purpose::STANDARD.encode(credentials.as_bytes());
 
-        let token_res = self.http_client.post("https://api.pinterest.com/v5/oauth/token")
+        let token_res = self
+            .http_client
+            .post("https://api.pinterest.com/v5/oauth/token")
             .header("Authorization", format!("Basic {}", encoded_credentials))
             .form(&[
                 ("grant_type", "authorization_code"),
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -44,15 +57,23 @@ impl Provider for PinterestProvider {
 
         let mut user = self.get_user_from_token(access_token).await?;
         user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
-        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
         Ok(user)
     }
 
-
-    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
-        let user_res = self.http_client.get("https://api.pinterest.com/v5/user_account")
+    async fn get_user_from_token(
+        &self,
+        access_token: &str,
+    ) -> Result<SocialiteUser, SocialiteError> {
+        let user_res = self
+            .http_client
+            .get("https://api.pinterest.com/v5/user_account")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -66,4 +87,5 @@ impl Provider for PinterestProvider {
             refresh_token: None,
             expires_in: None,
         })
-    }}
+    }
+}

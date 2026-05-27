@@ -1,9 +1,9 @@
-use rand::{distributions::Alphanumeric, Rng};
+use base64::{Engine as _, engine::general_purpose};
+use rand::{Rng, distributions::Alphanumeric};
 use sha2::{Digest, Sha256};
-use base64::{engine::general_purpose, Engine as _};
 
 /// Generates a (code_verifier, code_challenge) pair for OAuth2 PKCE.
-/// 
+///
 /// - `code_verifier`: A high-entropy cryptographic random string. The developer MUST store this in the session/cookie.
 /// - `code_challenge`: The base64-url-encoded SHA256 hash of the verifier. Sent in the authorization URL.
 pub fn generate_pkce() -> (String, String) {

@@ -1,27 +1,27 @@
 # 🗺️ rust-socialite Roadmap
 
-Bem-vindo ao roadmap oficial do `rust-socialite`! A biblioteca já suporta 33 provedores, suporte a tokens dinâmicos, extração via `get_user_from_token`, proteção CSRF (via `state`) e customização de `scopes`. 
+Welcome to the official roadmap for `rust-socialite`! The library currently supports 33 providers, dynamic token parsing, `get_user_from_token` extraction, CSRF protection (via `state`), and `scopes` customization.
 
-Para o nosso caminho rumo à versão **`v1.0.0`** (Nível Enterprise), planejamos as seguintes adições maiores que já estão ativamente sendo trabalhadas:
+For our journey towards the **`v1.0.0`** release (Enterprise Level), we have planned the following major additions which are actively being worked on:
 
-## ⏳ Em Progresso (Fase 3 & 4)
+## ⏳ In Progress (Phases 3 & 4)
 
-- [x] **Macros de Redução de Boilerplate:** Usar `define_provider!` para cortar drasticamente o código repetitivo nas structs de provedores, facilitando a contribuição de novos provedores pela comunidade.
-- [ ] **Integração Nativa com Frameworks:** Criar as features opcionais `axum` e `actix`, provendo Extractors (como `AuthCallback`) para que a extração de códigos, estados e erros da URL seja 100% mágica.
-- [ ] **Revogação de Tokens (Logout):** Adicionar método `revoke_token` à trait para permitir logout direto nos servidores de provedores suportados.
-- [ ] **Ferramentas de Mocking (TDD):** Um `MockProvider` para facilitar a escrita de testes unitários pelos usuários finais da biblioteca.
-- [ ] **Suporte OIDC:** Validação automática e ultra-rápida de `id_token` do Google e da Apple usando JWT (sem calls HTTP extras).
+- [x] **Boilerplate Reduction Macros:** Use `define_provider!` to drastically cut down repetitive code in provider structs, making it easier for the community to contribute new providers.
+- [x] **Native Framework Integration:** Create the optional `axum` and `actix` features, providing Extractors (like `AuthCallback`) so URL parsing of codes, states, and errors works magically.
+- [x] **Token Revocation (Logout):** Add the `revoke_token` method to the trait to allow direct logout on the supported providers' servers.
+- [x] **Mocking Tools (TDD):** A `MockProvider` to facilitate writing unit tests for end users of the library.
+- [x] **OIDC Support:** Automatic and ultra-fast `id_token` validation for Google and Apple using JWT (without extra HTTP calls).
+- [x] **Security Audit & PKCE:** Implement strict URL parsing, eliminate panics, and provide native `.with_pkce()` support across all providers.
 
-## 🔮 Futuro Distante
+## 🔮 Not So Distant Future
 
-- **Agnóstico de Cliente HTTP:** Suporte genérico a clientes (via trait `HttpClient`) permitindo o uso de `surf`, `reqwest-middleware` ou outros, ao invés de forçar o `reqwest`.
-- **Suporte Universal a PKCE:** Trazer o padrão PKCE (Proof Key for Code Exchange) nativamente para todos os provedores via método `.with_pkce()`, focando em máxima segurança para SPA/Mobile.
-- **Integração com Bancos de Dados (SQLx/Diesel):** Traits auxiliares (ex: `IntoDatabaseUser`) para facilitar o salvamento direto do usuário no banco de dados.
-- **Suporte a Proxy HTTP:** Permitir a configuração de proxies corporativos para ambientes bloqueados.
-- **Módulo de Refrescos:** Suporte a `refresh_token` automatizado caso o token principal tenha expirado (lidando automaticamente com os endpoints `/token` em background).
-- **Padronização Universal de Avatar:** Fazer parsing avançado para garantir resoluções ótimas nas fotos de perfis retornadas.
-- **Integração com Leptos e Dioxus:** Extractors para frameworks Fullstack / WebAssembly Rust.
+- **HTTP Client Agnostic:** Generic client support (via `HttpClient` trait) allowing the use of `surf`, `reqwest-middleware`, or others instead of forcing `reqwest`.
+- **Database Integration (rust-eloquent, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rust-eloquent` to keep the Laravel ecosystem vibe in Rust!
+- **HTTP Proxy Support:** Allow the configuration of corporate proxies for locked-down environments.
+- **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires (automatically handling `/token` endpoints in the background).
+- **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
+- **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks.
 
 ---
 
-Quer ajudar a implementar alguma dessas features? Fique à vontade para abrir uma PR!
+Want to help implement any of these features? Feel free to open a PR!

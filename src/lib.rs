@@ -1,9 +1,10 @@
 pub mod error;
-pub mod pkce;
-pub mod provider;
-pub mod user;
-pub mod providers;
 pub mod extractors;
+pub mod pkce;
+pub mod prelude;
+pub mod provider;
+pub mod providers;
+pub mod user;
 
 #[macro_use]
 pub mod macros;

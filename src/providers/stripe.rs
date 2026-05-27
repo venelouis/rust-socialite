@@ -1,6 +1,6 @@
-﻿use crate::provider::Provider;
-use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
+use crate::provider::Provider;
+use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -11,26 +11,39 @@ impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
         let mut url = url::Url::parse("https://connect.stripe.com/oauth/authorize").unwrap();
         url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut().append_pair("client_id", &self.client_id);
-        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        url.query_pairs_mut()
+            .append_pair("client_id", &self.client_id);
+        url.query_pairs_mut()
+            .append_pair("redirect_uri", &self.redirect_url);
         if !self.scopes.is_empty() {
-            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+            url.query_pairs_mut()
+                .append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             url.query_pairs_mut().append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            url.query_pairs_mut().append_pair("code_challenge", pkce);
+            url.query_pairs_mut()
+                .append_pair("code_challenge_method", "S256");
         }
         url.into()
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
-        let token_res = self.http_client.post("https://connect.stripe.com/oauth/token")
+        let token_res = self
+            .http_client
+            .post("https://connect.stripe.com/oauth/token")
             .form(&[
                 ("grant_type", "authorization_code"),
                 ("client_secret", self.client_secret.as_str()),
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -47,20 +60,29 @@ impl Provider for StripeProvider {
             user.id = stripe_user_id.to_string();
         }
         user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
-        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
         Ok(user)
     }
 
-
-    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
+    async fn get_user_from_token(
+        &self,
+        access_token: &str,
+    ) -> Result<SocialiteUser, SocialiteError> {
         // Fetch account details using the connected account ID (or just /v1/account for the current token owner)
-        let user_res = self.http_client.get("https://api.stripe.com/v1/account")
+        let user_res = self
+            .http_client
+            .get("https://api.stripe.com/v1/account")
             .header("Authorization", format!("Bearer {}", access_token))
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
-        let name = user_res["business_profile"]["name"].as_str()
+        let name = user_res["business_profile"]["name"]
+            .as_str()
             .or_else(|| user_res["settings"]["dashboard"]["display_name"].as_str())
             .unwrap_or("");
 
@@ -76,4 +98,3 @@ impl Provider for StripeProvider {
         })
     }
 }
-

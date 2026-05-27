@@ -15,7 +15,12 @@
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
 
-## 📦 Supported Providers (v0.4.1)
+> 📚 **Important Documents:**
+> - [CHANGELOG.md](CHANGELOG.md): See what's new in v5.0.0.
+> - [ROADMAP.md](ROADMAP.md): Discover our path to v1.0.0.
+> - [SECURITY_AUDIT.md](SECURITY_AUDIT.md): Detailed report on the v5.0.0 Enterprise Security Audit.
+
+## 📦 Supported Providers (v5.0.0)
 
 Official support for 33 major providers:
 
@@ -69,8 +74,7 @@ tokio = { version = "1.52", features = ["full"] }
 Choose your provider and pass your credentials and callback URL:
 
 ```rust
-use rust_socialite::providers::github::GithubProvider;
-use rust_socialite::Provider;
+use rust_socialite::prelude::*;
 
 let github = GithubProvider::new(
     "YOUR_CLIENT_ID".to_string(),
@@ -109,8 +113,8 @@ To prevent Cross-Site Request Forgery (CSRF) attacks, you should generate a secu
 // 1. Generate a random state string and save it in the session
 let state = "random_secure_string";
 
-// 2. Get the authorization URL with the state parameter
-let url = github.redirect_url_with_state(state);
+// 2. Get the authorization URL with the state parameter using the builder
+let url = github.with_state(state).redirect_url();
 // return Redirect::temporary(&url);
 
 // 3. In the callback route, verify if the query param `state` matches your session!
@@ -128,8 +132,8 @@ let (code_verifier, code_challenge) = generate_pkce();
 
 // 2. Save `code_verifier` in the user's session or a secure HttpOnly cookie!
 
-// 3. Get the URL with PKCE
-let auth_url = provider.redirect_url_with_pkce(&code_challenge);
+// 3. Get the URL with PKCE natively using the builder pattern
+let auth_url = provider.with_pkce(&code_challenge).redirect_url();
 
 // 4. In the callback route, fetch the user using the saved verifier:
 let user = provider.get_user_with_pkce(&code, &code_verifier).await.unwrap();

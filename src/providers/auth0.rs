@@ -1,8 +1,7 @@
-﻿use crate::provider::Provider;
-use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
+use crate::provider::Provider;
+use crate::user::SocialiteUser;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 
 pub struct Auth0Provider {
@@ -10,22 +9,33 @@ pub struct Auth0Provider {
     client_secret: String,
     redirect_url: String,
     domain: String,
-    http_client: Client,
+    http_client: reqwest::Client,
     scopes: Vec<String>,
     state: Option<String>,
+    pkce_challenge: Option<String>,
 }
 
 impl Auth0Provider {
     /// Note: domain should be the tenant domain, e.g., "dev-xxxx.us.auth0.com"
-    pub fn new(client_id: String, client_secret: String, redirect_url: String, domain: String) -> Self {
+    pub fn new(
+        client_id: String,
+        client_secret: String,
+        redirect_url: String,
+        domain: String,
+    ) -> Self {
         Self {
             client_id,
             client_secret,
             redirect_url,
             domain,
-            http_client: Client::new(),
-            scopes: vec!["openid".to_string(), "profile".to_string(), "email".to_string()],
+            http_client: reqwest::Client::new(),
+            scopes: vec![
+                "openid".to_string(),
+                "profile".to_string(),
+                "email".to_string(),
+            ],
             state: None,
+            pkce_challenge: None,
         }
     }
 }
@@ -35,19 +45,29 @@ impl Provider for Auth0Provider {
     fn redirect_url(&self) -> String {
         let mut url = url::Url::parse("https://{}/authorize").unwrap();
         url.query_pairs_mut().append_pair("client_id", &self.domain);
-        url.query_pairs_mut().append_pair("redirect_uri", &self.client_id);
+        url.query_pairs_mut()
+            .append_pair("redirect_uri", &self.client_id);
         url.query_pairs_mut().append_pair("response_type", "code");
         if !self.scopes.is_empty() {
-            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+            url.query_pairs_mut()
+                .append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             url.query_pairs_mut().append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            url.query_pairs_mut().append_pair("code_challenge", pkce);
+            url.query_pairs_mut()
+                .append_pair("code_challenge_method", "S256");
         }
         url.into()
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
-        let token_res = self.http_client.post(format!("https://{}/oauth/token", self.domain))
+        let token_res = self
+            .http_client
+            .post(format!("https://{}/oauth/token", self.domain))
             .form(&[
                 ("grant_type", "authorization_code"),
                 ("client_id", self.client_id.as_str()),
@@ -55,7 +75,9 @@ impl Provider for Auth0Provider {
                 ("code", auth_code),
                 ("redirect_uri", self.redirect_url.as_str()),
             ])
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -65,15 +87,23 @@ impl Provider for Auth0Provider {
 
         let mut user = self.get_user_from_token(access_token).await?;
         user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
-        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
         Ok(user)
     }
 
-
-    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
-        let user_res = self.http_client.get(format!("https://{}/userinfo", self.domain))
+    async fn get_user_from_token(
+        &self,
+        access_token: &str,
+    ) -> Result<SocialiteUser, SocialiteError> {
+        let user_res = self
+            .http_client
+            .get(format!("https://{}/userinfo", self.domain))
             .header("Authorization", format!("Bearer {}", access_token))
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -87,4 +117,5 @@ impl Provider for Auth0Provider {
             refresh_token: None,
             expires_in: None,
         })
-    }}
+    }
+}

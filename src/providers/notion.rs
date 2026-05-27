@@ -1,9 +1,9 @@
-﻿use crate::provider::Provider;
-use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
+use crate::provider::Provider;
+use crate::user::SocialiteUser;
 use async_trait::async_trait;
+use base64::{Engine as _, engine::general_purpose};
 use serde_json::Value;
-use base64::{engine::general_purpose, Engine as _};
 
 crate::define_provider!(NotionProvider);
 
@@ -11,15 +11,24 @@ crate::define_provider!(NotionProvider);
 impl Provider for NotionProvider {
     fn redirect_url(&self) -> String {
         let mut url = url::Url::parse("https://api.notion.com/v1/oauth/authorize").unwrap();
-        url.query_pairs_mut().append_pair("client_id", &self.client_id);
+        url.query_pairs_mut()
+            .append_pair("client_id", &self.client_id);
         url.query_pairs_mut().append_pair("response_type", "code");
         url.query_pairs_mut().append_pair("owner", "user");
-        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        url.query_pairs_mut()
+            .append_pair("redirect_uri", &self.redirect_url);
         if !self.scopes.is_empty() {
-            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+            url.query_pairs_mut()
+                .append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             url.query_pairs_mut().append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            url.query_pairs_mut().append_pair("code_challenge", pkce);
+            url.query_pairs_mut()
+                .append_pair("code_challenge_method", "S256");
         }
         url.into()
     }
@@ -28,14 +37,18 @@ impl Provider for NotionProvider {
         let credentials = format!("{}:{}", self.client_id, self.client_secret);
         let encoded_credentials = general_purpose::STANDARD.encode(credentials.as_bytes());
 
-        let token_res = self.http_client.post("https://api.notion.com/v1/oauth/token")
+        let token_res = self
+            .http_client
+            .post("https://api.notion.com/v1/oauth/token")
             .header("Authorization", format!("Basic {}", encoded_credentials))
             .json(&serde_json::json!({
                 "grant_type": "authorization_code",
                 "code": auth_code,
                 "redirect_uri": self.redirect_url.as_str()
             }))
-            .send().await?.error_for_status()?
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -51,12 +64,19 @@ impl Provider for NotionProvider {
             raw_data: token_res.clone(), // Notion returns user data right in the token response
             access_token,
             refresh_token: token_res["refresh_token"].as_str().map(|s| s.to_string()),
-            expires_in: token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64)),
+            expires_in: token_res["expires_in"]
+                .as_u64()
+                .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64)),
         })
     }
 
-    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
-        let user_res = self.http_client.get("https://api.notion.com/v1/users/me")
+    async fn get_user_from_token(
+        &self,
+        access_token: &str,
+    ) -> Result<SocialiteUser, SocialiteError> {
+        let user_res = self
+            .http_client
+            .get("https://api.notion.com/v1/users/me")
             .header("Authorization", format!("Bearer {}", access_token))
             .header("Notion-Version", "2022-06-28")
             .send()
@@ -82,4 +102,3 @@ impl Provider for NotionProvider {
         })
     }
 }
-

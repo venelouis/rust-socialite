@@ -1,8 +1,8 @@
 use axum::{
+    Router,
     extract::Query,
     response::{Html, IntoResponse, Redirect},
     routing::get,
-    Router,
 };
 use rust_socialite::provider::Provider;
 use rust_socialite::providers::github::GithubProvider;
@@ -30,16 +30,20 @@ async fn main() {
         .route("/auth/github/callback", get(callback_github));
 
     println!("🚀 Servidor rodando em http://localhost:3000");
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
+        .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
 async fn index() -> Html<&'static str> {
-    Html(r#"
+    Html(
+        r#"
         <h1>Rust Socialite Example</h1>
         <a href="/auth/google">Login com Google</a><br><br>
         <a href="/auth/github">Login com GitHub</a>
-    "#)
+    "#,
+    )
 }
 
 // ==========================================

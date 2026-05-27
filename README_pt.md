@@ -13,7 +13,7 @@
 - 🛡️ **Tipagem Segura**: Tratamento de erros robusto com `thiserror` (`SocialiteError`).
 - 🔌 **Agnóstica a Framework**: Funciona com Axum, Actix, Leptos, Dioxus, ou qualquer outro framework.
 
-## 📦 Provedores Suportados (v0.4.1)
+## 📦 Provedores Suportados (v5.0.0)
 
 Já oferecemos suporte oficial para incríveis 33 dos maiores provedores do mercado:
 
