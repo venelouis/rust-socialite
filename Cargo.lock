@@ -1631,7 +1631,7 @@ dependencies = [
 
 [[package]]
 name = "rust-socialite"
-version = "5.0.1"
+version = "0.5.0"
 dependencies = [
  "actix-web",
  "async-trait",
