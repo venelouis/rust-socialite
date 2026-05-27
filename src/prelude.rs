@@ -11,5 +11,5 @@ pub use crate::provider::Provider;
 pub use crate::providers::*;
 pub use crate::user::SocialiteUser;
 
-#[cfg(any(feature = "axum", feature = "actix-web"))]
+#[cfg(any(feature = "axum", feature = "actix"))]
 pub use crate::extractors::AuthCallback;
