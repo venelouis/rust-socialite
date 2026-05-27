@@ -26,4 +26,8 @@ pub trait Provider: Send + Sync {
     async fn get_user_with_pkce(&self, auth_code: &str, _code_verifier: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
         self.get_user(auth_code).await
     }
+
+    /// Fetches the user's profile using an existing access token.
+    /// This bypasses the authorization code exchange step.
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, crate::error::SocialiteError>;
 }

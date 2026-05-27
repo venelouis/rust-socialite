@@ -1,41 +1,29 @@
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 use url::form_urlencoded;
 
-pub struct GoogleProvider {
-    client_id: String,
-    client_secret: String,
-    redirect_url: String,
-    http_client: Client,
-}
-
-impl GoogleProvider {
-    pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
-        Self {
-            client_id,
-            client_secret,
-            redirect_url,
-            http_client: Client::new(),
-        }
-    }
-}
+crate::define_provider!(GoogleProvider, "openid", "profile", "email");
 
 #[async_trait]
 impl Provider for GoogleProvider {
     fn redirect_url(&self) -> String {
-        let params = form_urlencoded::Serializer::new(String::new())
-            .append_pair("client_id", &self.client_id)
+        let mut params = form_urlencoded::Serializer::new(String::new());
+        params.append_pair("client_id", &self.client_id)
             .append_pair("redirect_uri", &self.redirect_url)
             .append_pair("response_type", "code")
-            .append_pair("scope", "openid profile email")
             .append_pair("access_type", "offline")
-            .append_pair("prompt", "consent")
-            .finish();
+            .append_pair("prompt", "consent");
+            
+        if !self.scopes.is_empty() {
+            params.append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
 
-        format!("https://accounts.google.com/o/oauth2/v2/auth?{}", params)
+        format!("https://accounts.google.com/o/oauth2/v2/auth?{}", params.finish())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
@@ -55,6 +43,14 @@ impl Provider for GoogleProvider {
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| crate::error::SocialiteError::Token("Failed to get access_token".to_string()))?;
 
+        let mut user = self.get_user_from_token(access_token).await?;
+        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
+    }
+
+
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
         // Fetch user profile
         let user_res = self.http_client.get("https://www.googleapis.com/oauth2/v3/userinfo")
             .header("Authorization", format!("Bearer {}", access_token))
@@ -69,6 +65,8 @@ impl Provider for GoogleProvider {
             email: user_res["email"].as_str().map(|s| s.to_string()),
             avatar_url: user_res["picture"].as_str().map(|s| s.to_string()),
             raw_data: user_res,
+            access_token: access_token.to_string(),
+            refresh_token: None,
+            expires_in: None,
         })
-    }
-}
+    }}

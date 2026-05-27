@@ -3,6 +3,10 @@ pub mod pkce;
 pub mod provider;
 pub mod user;
 pub mod providers;
+pub mod extractors;
+
+#[macro_use]
+pub mod macros;
 
 pub use error::SocialiteError;
 

@@ -2,34 +2,24 @@ use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 
-pub struct StripeProvider {
-    client_id: String,
-    client_secret: String,
-    redirect_url: String,
-    http_client: Client,
-}
-
-impl StripeProvider {
-    pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
-        Self {
-            client_id,
-            client_secret,
-            redirect_url,
-            http_client: Client::new(),
-        }
-    }
-}
+crate::define_provider!(StripeProvider, "read_write");
 
 #[async_trait]
 impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
-        format!(
-            "https://connect.stripe.com/oauth/authorize?response_type=code&client_id={}&scope=read_write",
-            self.client_id
-        )
+        let mut url = url::Url::parse("https://connect.stripe.com/oauth/authorize").unwrap();
+        url.query_pairs_mut().append_pair("response_type", "code");
+        url.query_pairs_mut().append_pair("client_id", &self.client_id);
+        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        if !self.scopes.is_empty() {
+            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            url.query_pairs_mut().append_pair("state", state);
+        }
+        url.into()
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
@@ -38,6 +28,7 @@ impl Provider for StripeProvider {
                 ("grant_type", "authorization_code"),
                 ("client_secret", self.client_secret.as_str()),
                 ("code", auth_code),
+                ("redirect_uri", self.redirect_url.as_str()),
             ])
             .send()
             .await?
@@ -52,8 +43,19 @@ impl Provider for StripeProvider {
             .as_str()
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
-        // Fetch account details using the connected account ID
-        let user_res = self.http_client.get(format!("https://api.stripe.com/v1/accounts/{}", stripe_user_id))
+        let mut user = self.get_user_from_token(access_token).await?;
+        if user.id.is_empty() {
+            user.id = stripe_user_id.to_string();
+        }
+        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
+    }
+
+
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
+        // Fetch account details using the connected account ID (or just /v1/account for the current token owner)
+        let user_res = self.http_client.get("https://api.stripe.com/v1/account")
             .header("Authorization", format!("Bearer {}", access_token))
             .send()
             .await?
@@ -65,11 +67,14 @@ impl Provider for StripeProvider {
             .unwrap_or("");
 
         Ok(SocialiteUser {
-            id: user_res["id"].as_str().unwrap_or(stripe_user_id).to_string(),
+            id: user_res["id"].as_str().unwrap_or("").to_string(),
             name: name.to_string(),
             email: user_res["email"].as_str().map(|s| s.to_string()),
             avatar_url: None, // Stripe does not expose an avatar URL via this endpoint
             raw_data: user_res,
+            access_token: access_token.to_string(),
+            refresh_token: None,
+            expires_in: None,
         })
     }
 }

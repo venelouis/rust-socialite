@@ -2,33 +2,25 @@ use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 
-pub struct XProvider {
-    client_id: String,
-    redirect_url: String,
-    http_client: Client,
-}
-
-impl XProvider {
-    /// Note: X (Twitter) OAuth v2 uses only a Client ID for public/confidential clients doing PKCE.
-    pub fn new(client_id: String, redirect_url: String) -> Self {
-        Self {
-            client_id,
-            redirect_url,
-            http_client: Client::new(),
-        }
-    }
-}
+crate::define_provider!(XProvider, "users.read", "tweet.read");
 
 #[async_trait]
 impl Provider for XProvider {
     fn redirect_url(&self) -> String {
-        format!(
-            "https://twitter.com/i/oauth2/authorize?response_type=code&client_id={}&redirect_uri={}&scope=users.read%20tweet.read&state=state",
-            self.client_id, self.redirect_url
-        )
+        let mut url = url::Url::parse("https://twitter.com/i/oauth2/authorize").unwrap();
+        url.query_pairs_mut().append_pair("response_type", "code");
+        url.query_pairs_mut().append_pair("client_id", &self.client_id);
+        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        url.query_pairs_mut().append_pair("state", "state");
+        if !self.scopes.is_empty() {
+            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            url.query_pairs_mut().append_pair("state", state);
+        }
+        url.into()
     }
 
     async fn get_user(&self, _auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
@@ -53,6 +45,13 @@ impl Provider for XProvider {
             .as_str()
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
+        let mut user = self.get_user_from_token(access_token).await?;
+        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
+    }
+
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
         let user_res = self.http_client.get("https://api.twitter.com/2/users/me?user.fields=profile_image_url")
             .header("Authorization", format!("Bearer {}", access_token))
             .send()
@@ -68,6 +67,9 @@ impl Provider for XProvider {
             email: None, // X v2 does not return email via this endpoint by default
             avatar_url: data["profile_image_url"].as_str().map(|s| s.to_string()),
             raw_data: user_res,
+            access_token: access_token.to_string(),
+            refresh_token: None,
+            expires_in: None,
         })
     }
 }

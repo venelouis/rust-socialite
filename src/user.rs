@@ -19,4 +19,13 @@ pub struct SocialiteUser {
     /// The raw JSON response received from the provider's user endpoint.
     /// Useful for extracting provider-specific fields not covered by this struct.
     pub raw_data: Value,
+    
+    /// The access token retrieved during the OAuth2 flow.
+    pub access_token: String,
+    
+    /// The refresh token retrieved during the OAuth2 flow (if provided).
+    pub refresh_token: Option<String>,
+    
+    /// The token expiration time in seconds from the time it was granted (if provided).
+    pub expires_in: Option<u64>,
 }

@@ -2,35 +2,26 @@ use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 use base64::{engine::general_purpose, Engine as _};
 
-pub struct NotionProvider {
-    client_id: String,
-    client_secret: String,
-    redirect_url: String,
-    http_client: Client,
-}
-
-impl NotionProvider {
-    pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
-        Self {
-            client_id,
-            client_secret,
-            redirect_url,
-            http_client: Client::new(),
-        }
-    }
-}
+crate::define_provider!(NotionProvider);
 
 #[async_trait]
 impl Provider for NotionProvider {
     fn redirect_url(&self) -> String {
-        format!(
-            "https://api.notion.com/v1/oauth/authorize?client_id={}&response_type=code&owner=user&redirect_uri={}",
-            self.client_id, self.redirect_url
-        )
+        let mut url = url::Url::parse("https://api.notion.com/v1/oauth/authorize").unwrap();
+        url.query_pairs_mut().append_pair("client_id", &self.client_id);
+        url.query_pairs_mut().append_pair("response_type", "code");
+        url.query_pairs_mut().append_pair("owner", "user");
+        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        if !self.scopes.is_empty() {
+            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            url.query_pairs_mut().append_pair("state", state);
+        }
+        url.into()
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
@@ -51,12 +42,44 @@ impl Provider for NotionProvider {
 
         let owner = &token_res["owner"]["user"];
 
+        let access_token = token_res["access_token"].as_str().unwrap_or("").to_string();
+
         Ok(SocialiteUser {
             id: owner["id"].as_str().unwrap_or("").to_string(),
             name: owner["name"].as_str().unwrap_or("").to_string(),
             email: owner["person"]["email"].as_str().map(|s| s.to_string()),
             avatar_url: owner["avatar_url"].as_str().map(|s| s.to_string()),
-            raw_data: token_res, // Notion returns user data right in the token response
+            raw_data: token_res.clone(), // Notion returns user data right in the token response
+            access_token,
+            refresh_token: token_res["refresh_token"].as_str().map(|s| s.to_string()),
+            expires_in: token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64)),
+        })
+    }
+
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
+        let user_res = self.http_client.get("https://api.notion.com/v1/users/me")
+            .header("Authorization", format!("Bearer {}", access_token))
+            .header("Notion-Version", "2022-06-28")
+            .send()
+            .await?
+            .json::<Value>()
+            .await?;
+
+        let user = if user_res["type"].as_str() == Some("bot") {
+            &user_res["bot"]["owner"]["user"]
+        } else {
+            &user_res
+        };
+
+        Ok(SocialiteUser {
+            id: user["id"].as_str().unwrap_or("").to_string(),
+            name: user["name"].as_str().unwrap_or("").to_string(),
+            email: user["person"]["email"].as_str().map(|s| s.to_string()),
+            avatar_url: user["avatar_url"].as_str().map(|s| s.to_string()),
+            raw_data: user_res,
+            access_token: access_token.to_string(),
+            refresh_token: None,
+            expires_in: None,
         })
     }
 }

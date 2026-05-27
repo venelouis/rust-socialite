@@ -2,34 +2,25 @@ use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use crate::error::SocialiteError;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 
-pub struct LineProvider {
-    client_id: String,
-    client_secret: String,
-    redirect_url: String,
-    http_client: Client,
-}
-
-impl LineProvider {
-    pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
-        Self {
-            client_id,
-            client_secret,
-            redirect_url,
-            http_client: Client::new(),
-        }
-    }
-}
+crate::define_provider!(LineProvider, "profile", "openid", "email");
 
 #[async_trait]
 impl Provider for LineProvider {
     fn redirect_url(&self) -> String {
-        format!(
-            "https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id={}&redirect_uri={}&state=socialite&scope=profile%20openid%20email",
-            self.client_id, self.redirect_url
-        )
+        let mut url = url::Url::parse("https://access.line.me/oauth2/v2.1/authorize").unwrap();
+        url.query_pairs_mut().append_pair("response_type", "code");
+        url.query_pairs_mut().append_pair("client_id", &self.client_id);
+        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        url.query_pairs_mut().append_pair("state", "socialite");
+        if !self.scopes.is_empty() {
+            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            url.query_pairs_mut().append_pair("state", state);
+        }
+        url.into()
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
@@ -50,6 +41,14 @@ impl Provider for LineProvider {
             .as_str()
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
+        let mut user = self.get_user_from_token(access_token).await?;
+        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
+    }
+
+
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, SocialiteError> {
         let user_res = self.http_client.get("https://api.line.me/v2/profile")
             .header("Authorization", format!("Bearer {}", access_token))
             .send()
@@ -63,6 +62,8 @@ impl Provider for LineProvider {
             email: None, // Line email requires parsing the 'id_token' JWT payload. We omit it here for simplicity.
             avatar_url: user_res["pictureUrl"].as_str().map(|s| s.to_string()),
             raw_data: user_res,
+            access_token: access_token.to_string(),
+            refresh_token: None,
+            expires_in: None,
         })
-    }
-}
+    }}

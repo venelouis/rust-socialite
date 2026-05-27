@@ -1,34 +1,24 @@
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
-use reqwest::Client;
 use serde_json::Value;
 
-pub struct LinkedinProvider {
-    client_id: String,
-    client_secret: String,
-    redirect_url: String,
-    http_client: Client,
-}
-
-impl LinkedinProvider {
-    pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
-        Self {
-            client_id,
-            client_secret,
-            redirect_url,
-            http_client: Client::new(),
-        }
-    }
-}
+crate::define_provider!(LinkedinProvider, "profile", "email", "openid");
 
 #[async_trait]
 impl Provider for LinkedinProvider {
     fn redirect_url(&self) -> String {
-        format!(
-            "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={}&redirect_uri={}&scope=profile%20email%20openid",
-            self.client_id, self.redirect_url
-        )
+        let mut url = url::Url::parse("https://www.linkedin.com/oauth/v2/authorization").unwrap();
+        url.query_pairs_mut().append_pair("response_type", "code");
+        url.query_pairs_mut().append_pair("client_id", &self.client_id);
+        url.query_pairs_mut().append_pair("redirect_uri", &self.redirect_url);
+        if !self.scopes.is_empty() {
+            url.query_pairs_mut().append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            url.query_pairs_mut().append_pair("state", state);
+        }
+        url.into()
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
@@ -47,6 +37,14 @@ impl Provider for LinkedinProvider {
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| crate::error::SocialiteError::Token("Failed to get access_token".to_string()))?;
 
+        let mut user = self.get_user_from_token(access_token).await?;
+        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
+    }
+
+
+    async fn get_user_from_token(&self, access_token: &str) -> Result<SocialiteUser, crate::error::SocialiteError> {
         let user_res = self.http_client.get("https://api.linkedin.com/v2/userinfo")
             .header("Authorization", format!("Bearer {}", access_token))
             .send()
@@ -60,6 +58,8 @@ impl Provider for LinkedinProvider {
             email: user_res["email"].as_str().map(|s| s.to_string()),
             avatar_url: user_res["picture"].as_str().map(|s| s.to_string()),
             raw_data: user_res,
+            access_token: access_token.to_string(),
+            refresh_token: None,
+            expires_in: None,
         })
-    }
-}
+    }}
