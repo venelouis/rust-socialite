@@ -8,7 +8,10 @@ crate::define_provider!(BitbucketProvider);
 #[async_trait]
 impl Provider for BitbucketProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://bitbucket.org/site/oauth2/authorize").unwrap();
+        let mut url = match url::Url::parse("https://bitbucket.org/site/oauth2/authorize") {
+            Ok(u) => u,
+            Err(_) => return String::new(),
+        };
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut().append_pair("response_type", "code");
