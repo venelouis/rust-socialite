@@ -57,7 +57,7 @@ Adicione o pacote ao seu `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "0.4.1"
+rust-socialite = "5.0.0"
 tokio = { version = "1.52", features = ["full"] }
 ```
 
