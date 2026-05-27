@@ -21,11 +21,13 @@ macro_rules! define_provider {
 
         impl $name {
             pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
+                static CLIENT: std::sync::LazyLock<reqwest::Client> =
+                    std::sync::LazyLock::new(reqwest::Client::new);
                 Self {
                     client_id,
                     client_secret,
                     redirect_url,
-                    http_client: reqwest::Client::new(),
+                    http_client: CLIENT.clone(),
                     scopes: vec![$($default_scope.to_string()),*],
                     state: None,
                     pkce_challenge: None,
