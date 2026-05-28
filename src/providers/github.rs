@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
@@ -65,7 +66,9 @@ impl Provider for GithubProvider {
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -95,8 +98,8 @@ impl Provider for GithubProvider {
                 .as_str()
                 .unwrap_or(user_res["login"].as_str().unwrap_or(""))
                 .to_string(),
-            email: user_res["email"].as_str().map(|s| s.to_string()),
-            avatar_url: user_res["avatar_url"].as_str().map(|s| s.to_string()),
+            email: user_res["email"].as_str().map(|s: &str| s.to_string()),
+            avatar_url: user_res["avatar_url"].as_str().map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

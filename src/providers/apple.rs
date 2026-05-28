@@ -56,7 +56,7 @@ impl AppleProvider {
     }
 
     pub fn with_scopes(mut self, scopes: &[&str]) -> Self {
-        self.scopes = scopes.iter().map(|s| s.to_string()).collect();
+        self.scopes = scopes.iter().map(|s: &&str| s.to_string()).collect();
         self
     }
 
@@ -94,16 +94,12 @@ impl AppleProvider {
 impl Provider for AppleProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
-        params
-            .append_pair("response_mode", "form_post");
+        params.append_pair("response_mode", "form_post");
         if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -111,10 +107,12 @@ impl Provider for AppleProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://appleid.apple.com/auth/authorize?{}", params.finish())
+        format!(
+            "https://appleid.apple.com/auth/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(
@@ -147,7 +145,9 @@ impl Provider for AppleProvider {
 
         let mut user = self.get_user_from_token(id_token_str).await?;
         user.access_token = access_token;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -172,7 +172,7 @@ impl Provider for AppleProvider {
         Ok(SocialiteUser {
             id: payload["sub"].as_str().unwrap_or("").to_string(),
             name: String::with_capacity(256), // Developer needs to extract this from the form_post on first login
-            email: payload["email"].as_str().map(|s| s.to_string()),
+            email: payload["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: None, // Apple does not provide avatars
             raw_data: payload,
             access_token: id_token_str.to_string(),

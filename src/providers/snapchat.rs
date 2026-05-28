@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::error::SocialiteError;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
@@ -57,7 +58,9 @@ impl Provider for SnapchatProvider {
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -87,7 +90,9 @@ impl Provider for SnapchatProvider {
             id: me["externalId"].as_str().unwrap_or("").to_string(),
             name: me["displayName"].as_str().unwrap_or("").to_string(),
             email: None,
-            avatar_url: me["bitmoji"]["avatar"].as_str().map(|s| s.to_string()),
+            avatar_url: me["bitmoji"]["avatar"]
+                .as_str()
+                .map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

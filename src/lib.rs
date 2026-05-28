@@ -1,3 +1,4 @@
+pub mod client;
 pub mod error;
 #[cfg(any(feature = "axum", feature = "actix"))]
 pub mod extractors;

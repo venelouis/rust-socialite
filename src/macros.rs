@@ -12,7 +12,7 @@ macro_rules! define_provider {
             pub(crate) client_id: String,
             pub(crate) client_secret: String,
             pub(crate) redirect_url: String,
-            pub(crate) http_client: reqwest::Client,
+            pub(crate) http_client: ::std::sync::Arc<dyn $crate::client::HttpClient>,
             pub(crate) scopes: Vec<String>,
             pub(crate) state: Option<String>,
             pub(crate) pkce_challenge: Option<String>,
@@ -20,8 +20,8 @@ macro_rules! define_provider {
 
         impl $name {
             pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
-                static CLIENT: std::sync::LazyLock<reqwest::Client> =
-                    std::sync::LazyLock::new(reqwest::Client::new);
+                static CLIENT: ::std::sync::LazyLock<::std::sync::Arc<dyn $crate::client::HttpClient>> =
+                    ::std::sync::LazyLock::new(|| ::std::sync::Arc::new($crate::client::ReqwestClient::new()));
                 Self {
                     client_id,
                     client_secret,
@@ -50,6 +50,12 @@ macro_rules! define_provider {
                 self.pkce_challenge = Some(challenge.to_string());
                 self
             }
+
+            /// Sets a custom HTTP client (e.g., for mocking, proxy, or non-reqwest backends).
+            pub fn with_http_client(mut self, client: ::std::sync::Arc<dyn $crate::client::HttpClient>) -> Self {
+                self.http_client = client;
+                self
+            }
         }
     };
 }
@@ -70,7 +76,10 @@ mod tests {
         assert_eq!(provider.client_id, "client_id");
         assert_eq!(provider.client_secret, "client_secret");
         assert_eq!(provider.redirect_url, "redirect_url");
-        assert_eq!(provider.scopes, vec!["default_scope1".to_string(), "default_scope2".to_string()]);
+        assert_eq!(
+            provider.scopes,
+            vec!["default_scope1".to_string(), "default_scope2".to_string()]
+        );
         assert_eq!(provider.state, None);
         assert_eq!(provider.pkce_challenge, None);
     }
@@ -81,9 +90,13 @@ mod tests {
             "client_id".to_string(),
             "client_secret".to_string(),
             "redirect_url".to_string(),
-        ).with_scopes(&["new_scope1", "new_scope2"]);
+        )
+        .with_scopes(&["new_scope1", "new_scope2"]);
 
-        assert_eq!(provider.scopes, vec!["new_scope1".to_string(), "new_scope2".to_string()]);
+        assert_eq!(
+            provider.scopes,
+            vec!["new_scope1".to_string(), "new_scope2".to_string()]
+        );
     }
 
     #[test]
@@ -92,7 +105,8 @@ mod tests {
             "client_id".to_string(),
             "client_secret".to_string(),
             "redirect_url".to_string(),
-        ).with_state("my_state");
+        )
+        .with_state("my_state");
 
         assert_eq!(provider.state, Some("my_state".to_string()));
     }
@@ -103,8 +117,12 @@ mod tests {
             "client_id".to_string(),
             "client_secret".to_string(),
             "redirect_url".to_string(),
-        ).with_pkce("my_pkce_challenge");
+        )
+        .with_pkce("my_pkce_challenge");
 
-        assert_eq!(provider.pkce_challenge, Some("my_pkce_challenge".to_string()));
+        assert_eq!(
+            provider.pkce_challenge,
+            Some("my_pkce_challenge".to_string())
+        );
     }
 }
