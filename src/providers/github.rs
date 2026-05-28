@@ -8,8 +8,7 @@ crate::define_provider!(GithubProvider, "user:email");
 #[async_trait]
 impl Provider for GithubProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://github.com/login/oauth/authorize")
-            .expect("Invalid redirect URL");
+        let mut url = url::Url::parse("https://github.com/login/oauth/authorize").unwrap();
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

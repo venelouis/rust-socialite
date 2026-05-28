@@ -8,8 +8,7 @@ crate::define_provider!(LinkedinProvider, "profile", "email", "openid");
 #[async_trait]
 impl Provider for LinkedinProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://www.linkedin.com/oauth/v2/authorization")
-            .expect("Invalid redirect URL");
+        let mut url = url::Url::parse("https://www.linkedin.com/oauth/v2/authorization").unwrap();
         url.query_pairs_mut().append_pair("response_type", "code");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
