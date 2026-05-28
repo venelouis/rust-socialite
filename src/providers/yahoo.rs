@@ -11,20 +11,27 @@ crate::define_provider!(YahooProvider);
 impl Provider for YahooProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::new());
-        params.append_pair("client_id", &self.client_id);
-        params.append_pair("redirect_uri", &self.redirect_url);
+params
+            .append_pair("client_id", &self.client_id);
+        params
+            .append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
-        crate::utils::append_auth_params(
-            &mut params,
-            &self.scopes,
-            &self.state,
-            &self.pkce_challenge,
-        );
+        if !self.scopes.is_empty() {
+            params
+                .append_pair("scope", &self.scopes.join(" "));
 
-        format!(
-            "https://api.login.yahoo.com/oauth2/request_auth?{}",
-            params.finish()
-        )
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            params.append_pair("code_challenge", pkce);
+params
+                .append_pair("code_challenge_method", "S256");
+        }
+        format!("https://api.login.yahoo.com/oauth2/request_auth?{}", params.finish())
+
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

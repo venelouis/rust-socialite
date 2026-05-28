@@ -9,21 +9,27 @@ crate::define_provider!(StripeProvider, "read_write");
 #[async_trait]
 impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
-        let mut query = url::form_urlencoded::Serializer::new(String::new());
-        query.append_pair("response_type", "code");
-        query.append_pair("client_id", &self.client_id);
-        query.append_pair("redirect_uri", &self.redirect_url);
-        crate::utils::append_auth_params(
-            &mut query,
-            &self.scopes,
-            &self.state,
-            &self.pkce_challenge,
-        );
+let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params.append_pair("response_type", "code");
+        params
+            .append_pair("client_id", &self.client_id);
+        params
+            .append_pair("redirect_uri", &self.redirect_url);
+        if !self.scopes.is_empty() {
+            params
+                .append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
 
-        format!(
-            "https://connect.stripe.com/oauth/authorize?{}",
-            query.finish()
-        )
+        if let Some(pkce) = &self.pkce_challenge {
+            params.append_pair("code_challenge", pkce);
+            params
+                .append_pair("code_challenge_method", "S256");
+        }
+        format!("https://connect.stripe.com/oauth/authorize?{}", params.finish())
+
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

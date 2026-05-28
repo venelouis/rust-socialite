@@ -8,23 +8,27 @@ crate::define_provider!(BitbucketProvider);
 #[async_trait]
 impl Provider for BitbucketProvider {
     fn redirect_url(&self) -> String {
-        let mut url = match url::Url::parse("https://bitbucket.org/site/oauth2/authorize") {
-            Ok(u) => u,
-            Err(_) => return String::new(),
-        };
-        url.query_pairs_mut()
-            .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut()
-            .append_pair("redirect_uri", &self.redirect_url);
-        crate::utils::append_auth_params(
-            &mut url.query_pairs_mut(),
-            &self.scopes,
-            &self.state,
-            &self.pkce_challenge,
-        );
+let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params
 
-        url.into()
+            .append_pair("client_id", &self.client_id);
+        params.append_pair("response_type", "code");
+        params
+            .append_pair("redirect_uri", &self.redirect_url);
+        if !self.scopes.is_empty() {
+            params
+                .append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            params.append_pair("code_challenge", pkce);
+            params
+                .append_pair("code_challenge_method", "S256");
+        }
+        format!("https://bitbucket.org/site/oauth2/authorize?{}", params.finish())
     }
 
     async fn get_user(

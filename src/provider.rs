@@ -11,7 +11,11 @@ pub trait Provider: Send + Sync {
     /// It is highly recommended to use this to prevent CSRF attacks.
     fn redirect_url_with_state(&self, state: &str) -> String {
         let url = self.redirect_url();
-        let separator = if url.contains('?') { "&" } else { "?" };
+        let separator = if url.contains('?') {
+            "&"
+        } else {
+            "?"
+        };
         format!("{url}{separator}state={state}")
     }
 
@@ -19,20 +23,33 @@ pub trait Provider: Send + Sync {
     /// Useful for providers that enforce PKCE (like Twitter/X v2).
     fn redirect_url_with_pkce(&self, code_challenge: &str) -> String {
         let url = self.redirect_url();
-        let separator = if url.contains('?') { "&" } else { "?" };
+        let separator = if url.contains('?') {
+            "&"
+        } else {
+            "?"
+        };
         format!(
             "{}{}code_challenge={}&code_challenge_method=S256",
-            url, separator, code_challenge
+            url,
+            separator,
+            code_challenge
         )
     }
 
     /// Returns the authorization URL with a PKCE `code_challenge` and a `state` parameter appended.
     fn redirect_url_with_pkce_and_state(&self, code_challenge: &str, state: &str) -> String {
         let url = self.redirect_url();
-        let separator = if url.contains('?') { "&" } else { "?" };
+        let separator = if url.contains('?') {
+            "&"
+        } else {
+            "?"
+        };
         format!(
             "{}{}code_challenge={}&code_challenge_method=S256&state={}",
-            url, separator, code_challenge, state
+            url,
+            separator,
+            code_challenge,
+            state
         )
     }
 

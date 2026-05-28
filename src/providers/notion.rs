@@ -10,21 +10,27 @@ crate::define_provider!(NotionProvider);
 #[async_trait]
 impl Provider for NotionProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://api.notion.com/v1/oauth/authorize").unwrap();
-        url.query_pairs_mut()
+        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params
             .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut().append_pair("owner", "user");
-        url.query_pairs_mut()
+        params.append_pair("response_type", "code");
+        params.append_pair("owner", "user");
+        params
             .append_pair("redirect_uri", &self.redirect_url);
-        crate::utils::append_auth_params(
-            &mut url.query_pairs_mut(),
-            &self.scopes,
-            &self.state,
-            &self.pkce_challenge,
-        );
+        if !self.scopes.is_empty() {
+            params
+                .append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
 
-        url.into()
+        if let Some(pkce) = &self.pkce_challenge {
+            params.append_pair("code_challenge", pkce);
+            params
+                .append_pair("code_challenge_method", "S256");
+        }
+        format!("https://api.notion.com/v1/oauth/authorize?{}", params.finish())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

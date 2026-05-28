@@ -11,20 +11,28 @@ impl Provider for TiktokProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::new());
         params
-            .append_pair("client_key", &self.client_id)
-            .append_pair("response_type", "code")
-            .append_pair("redirect_uri", &self.redirect_url);
-        crate::utils::append_auth_params(
-            &mut params,
-            &self.scopes,
-            &self.state,
-            &self.pkce_challenge,
-        );
+.append_pair("client_key", &self.client_id);
+        params.append_pair("response_type", "code");
+        params
 
-        format!(
-            "https://www.tiktok.com/v2/auth/authorize?{}",
-            params.finish()
-        )
+            .append_pair("redirect_uri", &self.redirect_url);
+
+        if !self.scopes.is_empty() {
+params
+                .append_pair("scope", &self.scopes.join(" "));
+
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
+
+        if let Some(pkce) = &self.pkce_challenge {
+            params.append_pair("code_challenge", pkce);
+params
+                .append_pair("code_challenge_method", "S256");
+
+        }
+        format!("https://www.tiktok.com/v2/auth/authorize?{}", params.finish())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

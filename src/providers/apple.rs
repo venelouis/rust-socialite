@@ -90,22 +90,28 @@ impl AppleProvider {
 #[async_trait]
 impl Provider for AppleProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://appleid.apple.com/auth/authorize").unwrap();
-        url.query_pairs_mut()
+        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params
             .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut()
+        params
             .append_pair("redirect_uri", &self.redirect_url);
-        url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut()
+        params.append_pair("response_type", "code");
+        params
             .append_pair("response_mode", "form_post");
-        crate::utils::append_auth_params(
-            &mut url.query_pairs_mut(),
-            &self.scopes,
-            &self.state,
-            &self.pkce_challenge,
-        );
+        if !self.scopes.is_empty() {
+            params
+                .append_pair("scope", &self.scopes.join(" "));
+        }
+        if let Some(state) = &self.state {
+            params.append_pair("state", state);
+        }
 
-        url.into()
+        if let Some(pkce) = &self.pkce_challenge {
+            params.append_pair("code_challenge", pkce);
+            params
+                .append_pair("code_challenge_method", "S256");
+        }
+        format!("https://appleid.apple.com/auth/authorize?{}", params.finish())
     }
 
     async fn get_user(
