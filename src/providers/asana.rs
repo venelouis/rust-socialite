@@ -9,7 +9,7 @@ crate::define_provider!(AsanaProvider);
 #[async_trait]
 impl Provider for AsanaProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://app.asana.com/-/oauth_authorize").unwrap();
+        let mut url = url::Url::parse("https://app.asana.com/-/oauth_authorize").expect("Invalid authorization URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

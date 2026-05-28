@@ -23,12 +23,14 @@ impl Auth0Provider {
         redirect_url: String,
         domain: String,
     ) -> Self {
+        static CLIENT: std::sync::LazyLock<reqwest::Client> =
+            std::sync::LazyLock::new(reqwest::Client::new);
         Self {
             client_id,
             client_secret,
             redirect_url,
             domain,
-            http_client: reqwest::Client::new(),
+            http_client: CLIENT.clone(),
             scopes: vec![
                 "openid".to_string(),
                 "profile".to_string(),
@@ -45,7 +47,7 @@ impl Provider for Auth0Provider {
     fn redirect_url(&self) -> String {
         let base_url = format!("https://{}/authorize", self.domain);
         let mut url = url::Url::parse(&base_url)
-            .unwrap_or_else(|_| url::Url::parse("https://auth0.com/authorize").unwrap());
+            .unwrap_or_else(|_| url::Url::parse("https://auth0.com/authorize").expect("Invalid authorization URL"));
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

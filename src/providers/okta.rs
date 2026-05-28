@@ -23,12 +23,14 @@ impl OktaProvider {
         redirect_url: String,
         domain: String,
     ) -> Self {
+        static CLIENT: std::sync::LazyLock<reqwest::Client> =
+            std::sync::LazyLock::new(reqwest::Client::new);
         Self {
             client_id,
             client_secret,
             redirect_url,
             domain,
-            http_client: reqwest::Client::new(),
+            http_client: CLIENT.clone(),
             scopes: vec![
                 "openid".to_string(),
                 "profile".to_string(),

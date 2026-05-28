@@ -8,7 +8,7 @@ crate::define_provider!(DiscordProvider, "identify", "email");
 #[async_trait]
 impl Provider for DiscordProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://discord.com/api/oauth2/authorize").unwrap();
+        let mut url = url::Url::parse("https://discord.com/api/oauth2/authorize").expect("Invalid authorization URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

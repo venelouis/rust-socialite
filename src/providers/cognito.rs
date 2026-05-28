@@ -25,12 +25,14 @@ impl CognitoProvider {
         domain: String,
     ) -> Self {
         let clean_domain = domain.trim_end_matches('/').to_string();
+        static CLIENT: std::sync::LazyLock<reqwest::Client> =
+            std::sync::LazyLock::new(reqwest::Client::new);
         Self {
             client_id,
             client_secret,
             redirect_url,
             domain: clean_domain,
-            http_client: Client::new(),
+            http_client: CLIENT.clone(),
             scopes: vec![
                 "openid".to_string(),
                 "profile".to_string(),
