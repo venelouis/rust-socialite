@@ -10,25 +10,27 @@ pub trait Provider: Send + Sync {
     /// Returns the authorization URL with a `state` parameter appended.
     /// It is highly recommended to use this to prevent CSRF attacks.
     fn redirect_url_with_state(&self, state: &str) -> String {
-        let separator = if self.redirect_url().contains('?') {
+        let url = self.redirect_url();
+        let separator = if url.contains('?') {
             "&"
         } else {
             "?"
         };
-        format!("{}{separator}state={state}", self.redirect_url())
+        format!("{url}{separator}state={state}")
     }
 
     /// Returns the authorization URL with a PKCE `code_challenge` appended.
     /// Useful for providers that enforce PKCE (like Twitter/X v2).
     fn redirect_url_with_pkce(&self, code_challenge: &str) -> String {
-        let separator = if self.redirect_url().contains('?') {
+        let url = self.redirect_url();
+        let separator = if url.contains('?') {
             "&"
         } else {
             "?"
         };
         format!(
             "{}{}code_challenge={}&code_challenge_method=S256",
-            self.redirect_url(),
+            url,
             separator,
             code_challenge
         )
@@ -36,14 +38,15 @@ pub trait Provider: Send + Sync {
 
     /// Returns the authorization URL with a PKCE `code_challenge` and a `state` parameter appended.
     fn redirect_url_with_pkce_and_state(&self, code_challenge: &str, state: &str) -> String {
-        let separator = if self.redirect_url().contains('?') {
+        let url = self.redirect_url();
+        let separator = if url.contains('?') {
             "&"
         } else {
             "?"
         };
         format!(
             "{}{}code_challenge={}&code_challenge_method=S256&state={}",
-            self.redirect_url(),
+            url,
             separator,
             code_challenge,
             state
@@ -101,38 +104,71 @@ mod tests {
         async fn get_user(
             &self,
             _auth_code: &str,
-        ) -> Result<crate::user::SocialiteUser, crate::error::SocialiteError> {
+        ) -> Result<SocialiteUser, crate::error::SocialiteError> {
             unimplemented!()
         }
 
         async fn get_user_from_token(
             &self,
             _access_token: &str,
-        ) -> Result<crate::user::SocialiteUser, crate::error::SocialiteError> {
+        ) -> Result<SocialiteUser, crate::error::SocialiteError> {
             unimplemented!()
         }
     }
 
     #[test]
-    fn test_redirect_url_with_pkce_and_state_no_query() {
-        let provider = DummyProvider {
+    fn test_redirect_url_with_state() {
+        let provider_no_query = DummyProvider {
             base_url: "https://example.com/auth".to_string(),
         };
-        let url = provider.redirect_url_with_pkce_and_state("my_challenge", "my_state");
         assert_eq!(
-            url,
-            "https://example.com/auth?code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
+            provider_no_query.redirect_url_with_state("my_state"),
+            "https://example.com/auth?state=my_state"
+        );
+
+        let provider_with_query = DummyProvider {
+            base_url: "https://example.com/auth?client_id=123".to_string(),
+        };
+        assert_eq!(
+            provider_with_query.redirect_url_with_state("my_state"),
+            "https://example.com/auth?client_id=123&state=my_state"
         );
     }
 
     #[test]
-    fn test_redirect_url_with_pkce_and_state_with_query() {
-        let provider = DummyProvider {
+    fn test_redirect_url_with_pkce() {
+        let provider_no_query = DummyProvider {
+            base_url: "https://example.com/auth".to_string(),
+        };
+        assert_eq!(
+            provider_no_query.redirect_url_with_pkce("my_challenge"),
+            "https://example.com/auth?code_challenge=my_challenge&code_challenge_method=S256"
+        );
+
+        let provider_with_query = DummyProvider {
             base_url: "https://example.com/auth?client_id=123".to_string(),
         };
-        let url = provider.redirect_url_with_pkce_and_state("my_challenge", "my_state");
         assert_eq!(
-            url,
+            provider_with_query.redirect_url_with_pkce("my_challenge"),
+            "https://example.com/auth?client_id=123&code_challenge=my_challenge&code_challenge_method=S256"
+        );
+    }
+
+    #[test]
+    fn test_redirect_url_with_pkce_and_state() {
+        let provider_no_query = DummyProvider {
+            base_url: "https://example.com/auth".to_string(),
+        };
+        assert_eq!(
+            provider_no_query.redirect_url_with_pkce_and_state("my_challenge", "my_state"),
+            "https://example.com/auth?code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
+        );
+
+        let provider_with_query = DummyProvider {
+            base_url: "https://example.com/auth?client_id=123".to_string(),
+        };
+        assert_eq!(
+            provider_with_query.redirect_url_with_pkce_and_state("my_challenge", "my_state"),
             "https://example.com/auth?client_id=123&code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
         );
     }
