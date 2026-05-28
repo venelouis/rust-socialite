@@ -3,6 +3,7 @@ use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
+
 crate::define_provider!(GithubProvider, "user:email");
 
 #[async_trait]
@@ -48,6 +49,14 @@ impl Provider for GithubProvider {
             .error_for_status()?
             .json::<Value>()
             .await?;
+
+        if let Some(err) = token_res["error"].as_str() {
+            let err_desc = token_res["error_description"].as_str().unwrap_or("");
+            return Err(crate::error::SocialiteError::Token(format!(
+                "Provider returned error: {} - {}",
+                err, err_desc
+            )));
+        }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
             crate::error::SocialiteError::Token("Failed to get access_token".to_string())

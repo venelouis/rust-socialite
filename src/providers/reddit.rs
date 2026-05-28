@@ -27,20 +27,18 @@ impl Provider for RedditProvider {
             params.append_pair("code_challenge", pkce);
             params.append_pair("code_challenge_method", "S256");
         }
-        format!(
-            "https://www.reddit.com/api/v1/authorize?{}",
-            params.finish()
-        )
+
+        format!("https://www.reddit.com/api/v1/authorize?{}", params.finish())
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
-        let credentials = format!("{}:{}", self.client_id, self.client_secret);
-        let encoded_credentials = general_purpose::STANDARD.encode(credentials.as_bytes());
+        let auth = format!("{}:{}", self.client_id, self.client_secret);
+        let b64_auth = general_purpose::STANDARD.encode(auth.as_bytes());
 
         let token_res = self
             .http_client
             .post("https://www.reddit.com/api/v1/access_token")
-            .header("Authorization", format!("Basic {}", encoded_credentials))
+            .header("Authorization", format!("Basic {}", b64_auth))
             .form(&[
                 ("grant_type", "authorization_code"),
                 ("code", auth_code),
@@ -72,7 +70,7 @@ impl Provider for RedditProvider {
             .http_client
             .get("https://oauth.reddit.com/api/v1/me")
             .header("Authorization", format!("Bearer {}", access_token))
-            .header("User-Agent", "rust-socialite/0.2.1")
+            .header("User-Agent", "rust-socialite/1.0")
             .send()
             .await?
             .error_for_status()?
@@ -82,7 +80,7 @@ impl Provider for RedditProvider {
         Ok(SocialiteUser {
             id: user_res["id"].as_str().unwrap_or("").to_string(),
             name: user_res["name"].as_str().unwrap_or("").to_string(),
-            email: None, // Reddit identity scope does not provide email by default
+            email: None, // Reddit API does not expose user emails
             avatar_url: user_res["icon_img"].as_str().map(|s| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
