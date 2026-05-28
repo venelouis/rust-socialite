@@ -89,6 +89,8 @@ pub trait Provider: Send + Sync {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::SocialiteError;
+    use crate::user::SocialiteUser;
     use async_trait::async_trait;
 
     struct DummyProvider {
@@ -104,14 +106,14 @@ mod tests {
         async fn get_user(
             &self,
             _auth_code: &str,
-        ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+        ) -> Result<SocialiteUser, SocialiteError> {
             unimplemented!()
         }
 
         async fn get_user_from_token(
             &self,
             _access_token: &str,
-        ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+        ) -> Result<SocialiteUser, SocialiteError> {
             unimplemented!()
         }
     }
@@ -171,5 +173,21 @@ mod tests {
             provider_with_query.redirect_url_with_pkce_and_state("my_challenge", "my_state"),
             "https://example.com/auth?client_id=123&code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
         );
+    }
+
+    #[tokio::test]
+    async fn test_default_revoke_token() {
+        let provider = DummyProvider {
+            base_url: "".to_string(),
+        };
+        let result = provider.revoke_token("some_token").await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            SocialiteError::Token(msg) => {
+                assert_eq!(msg, "Token revocation is not supported by this provider");
+            }
+            _ => panic!("Expected SocialiteError::Token"),
+        }
     }
 }
