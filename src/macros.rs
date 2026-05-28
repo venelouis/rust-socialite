@@ -10,7 +10,6 @@ macro_rules! define_provider {
     ($name:ident, $($default_scope:expr),*) => {
         pub struct $name {
             pub(crate) client_id: String,
-            #[allow(dead_code)]
             pub(crate) client_secret: String,
             pub(crate) redirect_url: String,
             pub(crate) http_client: reqwest::Client,
