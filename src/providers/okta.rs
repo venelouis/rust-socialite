@@ -40,7 +40,7 @@ impl OktaProvider {
     }
 
     pub fn with_scopes(mut self, scopes: &[&str]) -> Self {
-        self.scopes = scopes.iter().map(|s| s.to_string()).collect();
+        self.scopes = scopes.iter().map(|s: &&str| s.to_string()).collect();
         self
     }
 
@@ -76,7 +76,11 @@ impl Provider for OktaProvider {
             params.append_pair("code_challenge_method", "S256");
         }
 
-        format!("https://{}/oauth2/v1/authorize?{}", self.domain, params.finish())
+        format!(
+            "https://{}/oauth2/v1/authorize?{}",
+            self.domain,
+            params.finish()
+        )
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
@@ -101,7 +105,9 @@ impl Provider for OktaProvider {
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -125,8 +131,8 @@ impl Provider for OktaProvider {
         Ok(SocialiteUser {
             id: user_res["sub"].as_str().unwrap_or("").to_string(),
             name: user_res["name"].as_str().unwrap_or("").to_string(),
-            email: user_res["email"].as_str().map(|s| s.to_string()),
-            avatar_url: user_res["picture"].as_str().map(|s| s.to_string()),
+            email: user_res["email"].as_str().map(|s: &str| s.to_string()),
+            avatar_url: user_res["picture"].as_str().map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

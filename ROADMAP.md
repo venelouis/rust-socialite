@@ -21,6 +21,9 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 - **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires (automatically handling `/token` endpoints in the background).
 - **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
 - **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks.
+- **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures.
+- **Rate Limiting & Advanced Retry Policies:** Offer integrated wrappers (e.g., via `reqwest-middleware` and `reqwest-retry`) to perform native exponential backoff when providers reject requests due to rate limits (HTTP 429).
+- **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `SocialiteError` to drastically improve debugging experience.
 
 ---
 

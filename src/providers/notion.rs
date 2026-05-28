@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::error::SocialiteError;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
@@ -11,15 +12,12 @@ crate::define_provider!(NotionProvider);
 impl Provider for NotionProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params
-            .append_pair("client_id", &self.client_id);
+        params.append_pair("client_id", &self.client_id);
         params.append_pair("response_type", "code");
         params.append_pair("owner", "user");
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("redirect_uri", &self.redirect_url);
         if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -27,10 +25,12 @@ impl Provider for NotionProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://api.notion.com/v1/oauth/authorize?{}", params.finish())
+        format!(
+            "https://api.notion.com/v1/oauth/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
@@ -59,11 +59,15 @@ impl Provider for NotionProvider {
         Ok(SocialiteUser {
             id: owner["id"].as_str().unwrap_or("").to_string(),
             name: owner["name"].as_str().unwrap_or("").to_string(),
-            email: owner["person"]["email"].as_str().map(|s| s.to_string()),
-            avatar_url: owner["avatar_url"].as_str().map(|s| s.to_string()),
+            email: owner["person"]["email"]
+                .as_str()
+                .map(|s: &str| s.to_string()),
+            avatar_url: owner["avatar_url"].as_str().map(|s: &str| s.to_string()),
             raw_data: token_res.clone(), // Notion returns user data right in the token response
             access_token,
-            refresh_token: token_res["refresh_token"].as_str().map(|s| s.to_string()),
+            refresh_token: token_res["refresh_token"]
+                .as_str()
+                .map(|s: &str| s.to_string()),
             expires_in: token_res["expires_in"]
                 .as_u64()
                 .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64)),
@@ -93,8 +97,10 @@ impl Provider for NotionProvider {
         Ok(SocialiteUser {
             id: user["id"].as_str().unwrap_or("").to_string(),
             name: user["name"].as_str().unwrap_or("").to_string(),
-            email: user["person"]["email"].as_str().map(|s| s.to_string()),
-            avatar_url: user["avatar_url"].as_str().map(|s| s.to_string()),
+            email: user["person"]["email"]
+                .as_str()
+                .map(|s: &str| s.to_string()),
+            avatar_url: user["avatar_url"].as_str().map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

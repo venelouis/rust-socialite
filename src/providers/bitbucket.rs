@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
@@ -10,13 +11,10 @@ impl Provider for BitbucketProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
         params.append_pair("response_type", "code");
-        params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
         if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -24,10 +22,12 @@ impl Provider for BitbucketProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://bitbucket.org/site/oauth2/authorize?{}", params.finish())
+        format!(
+            "https://bitbucket.org/site/oauth2/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(
@@ -55,7 +55,9 @@ impl Provider for BitbucketProvider {
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -93,7 +95,7 @@ impl Provider for BitbucketProvider {
                     .find(|v| v["is_primary"].as_bool().unwrap_or(false))
             })
             .and_then(|v| v["email"].as_str())
-            .map(|s| s.to_string());
+            .map(|s: &str| s.to_string());
 
         Ok(SocialiteUser {
             id: user_res["account_id"].as_str().unwrap_or("").to_string(),
@@ -101,7 +103,7 @@ impl Provider for BitbucketProvider {
             email,
             avatar_url: user_res["links"]["avatar"]["href"]
                 .as_str()
-                .map(|s| s.to_string()),
+                .map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::error::SocialiteError;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
@@ -10,14 +11,11 @@ crate::define_provider!(LinearProvider, "read");
 impl Provider for LinearProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
         if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -25,8 +23,7 @@ impl Provider for LinearProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
         format!("https://linear.app/oauth/authorize?{}", params.finish())
     }
@@ -53,7 +50,9 @@ impl Provider for LinearProvider {
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -82,8 +81,8 @@ impl Provider for LinearProvider {
         Ok(SocialiteUser {
             id: viewer["id"].as_str().unwrap_or("").to_string(),
             name: viewer["name"].as_str().unwrap_or("").to_string(),
-            email: viewer["email"].as_str().map(|s| s.to_string()),
-            avatar_url: viewer["avatarUrl"].as_str().map(|s| s.to_string()),
+            email: viewer["email"].as_str().map(|s: &str| s.to_string()),
+            avatar_url: viewer["avatarUrl"].as_str().map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

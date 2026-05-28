@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
@@ -9,13 +10,10 @@ crate::define_provider!(FacebookProvider, "email", "public_profile");
 impl Provider for FacebookProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
         if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -23,10 +21,12 @@ impl Provider for FacebookProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://www.facebook.com/v19.0/dialog/oauth?{}", params.finish())
+        format!(
+            "https://www.facebook.com/v19.0/dialog/oauth?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(
@@ -53,7 +53,9 @@ impl Provider for FacebookProvider {
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -74,12 +76,12 @@ impl Provider for FacebookProvider {
 
         let avatar = user_res["picture"]["data"]["url"]
             .as_str()
-            .map(|s| s.to_string());
+            .map(|s: &str| s.to_string());
 
         Ok(SocialiteUser {
             id: user_res["id"].as_str().unwrap_or("").to_string(),
             name: user_res["name"].as_str().unwrap_or("").to_string(),
-            email: user_res["email"].as_str().map(|s| s.to_string()),
+            email: user_res["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: avatar,
             raw_data: user_res,
             access_token: access_token.to_string(),

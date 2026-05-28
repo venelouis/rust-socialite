@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
@@ -9,14 +10,11 @@ crate::define_provider!(MicrosoftProvider, "User.Read");
 impl Provider for MicrosoftProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
         if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -24,10 +22,12 @@ impl Provider for MicrosoftProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{}", params.finish())
+        format!(
+            "https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(
@@ -55,7 +55,9 @@ impl Provider for MicrosoftProvider {
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -82,7 +84,7 @@ impl Provider for MicrosoftProvider {
             email: user_res["mail"]
                 .as_str()
                 .or_else(|| user_res["userPrincipalName"].as_str())
-                .map(|s| s.to_string()),
+                .map(|s: &str| s.to_string()),
             avatar_url: None, // Requires a separate request to /me/photo/$value
             raw_data: user_res,
             access_token: access_token.to_string(),

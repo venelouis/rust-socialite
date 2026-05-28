@@ -1,3 +1,4 @@
+use crate::client::HttpClientExt;
 use crate::error::SocialiteError;
 use crate::provider::Provider;
 use crate::user::SocialiteUser;
@@ -46,7 +47,9 @@ impl Provider for VkProvider {
             .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
-        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
         user.expires_in = token_res["expires_in"]
             .as_u64()
             .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
@@ -92,7 +95,7 @@ impl Provider for VkProvider {
                 .unwrap_or_else(|| "".to_string()),
             name,
             email: None, // Email is generally not available in users.get unless specified and granted
-            avatar_url: user_data["photo_200"].as_str().map(|s| s.to_string()),
+            avatar_url: user_data["photo_200"].as_str().map(|s: &str| s.to_string()),
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,
