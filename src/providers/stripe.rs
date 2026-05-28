@@ -9,7 +9,7 @@ crate::define_provider!(StripeProvider, "read_write");
 #[async_trait]
 impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
-        let mut query = url::form_urlencoded::Serializer::new(String::new());
+        let mut query = url::form_urlencoded::Serializer::new(String::with_capacity(256));
         query.append_pair("response_type", "code");
         query
             .append_pair("client_id", &self.client_id);

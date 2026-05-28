@@ -93,7 +93,7 @@ impl AppleProvider {
 #[async_trait]
 impl Provider for AppleProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
         params
             .append_pair("client_id", &self.client_id);
         params
@@ -171,7 +171,7 @@ impl Provider for AppleProvider {
 
         Ok(SocialiteUser {
             id: payload["sub"].as_str().unwrap_or("").to_string(),
-            name: String::new(), // Developer needs to extract this from the form_post on first login
+            name: String::with_capacity(256), // Developer needs to extract this from the form_post on first login
             email: payload["email"].as_str().map(|s| s.to_string()),
             avatar_url: None, // Apple does not provide avatars
             raw_data: payload,

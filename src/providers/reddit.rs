@@ -11,7 +11,7 @@ crate::define_provider!(RedditProvider, "identity");
 #[async_trait]
 impl Provider for RedditProvider {
     fn redirect_url(&self) -> String {
-        let mut params = form_urlencoded::Serializer::new(String::new());
+        let mut params = form_urlencoded::Serializer::new(String::with_capacity(256));
         params.append_pair("client_id", &self.client_id);
         params.append_pair("response_type", "code");
         params.append_pair("state", "socialite");

@@ -9,7 +9,7 @@ crate::define_provider!(GithubProvider, "user:email");
 #[async_trait]
 impl Provider for GithubProvider {
     fn redirect_url(&self) -> String {
-        let mut params = form_urlencoded::Serializer::new(String::new());
+        let mut params = form_urlencoded::Serializer::new(String::with_capacity(256));
         params.append_pair("client_id", &self.client_id);
         params.append_pair("redirect_uri", &self.redirect_url);
 

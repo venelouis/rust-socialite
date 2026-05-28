@@ -9,7 +9,7 @@ crate::define_provider!(DigitaloceanProvider, "read");
 #[async_trait]
 impl Provider for DigitaloceanProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
         params
             .append_pair("client_id", &self.client_id);
         params
@@ -78,7 +78,7 @@ impl Provider for DigitaloceanProvider {
 
         Ok(SocialiteUser {
             id: account["uuid"].as_str().unwrap_or("").to_string(),
-            name: String::new(), // DigitalOcean does not provide a display name via API
+            name: String::with_capacity(256), // DigitalOcean does not provide a display name via API
             email: account["email"].as_str().map(|s| s.to_string()),
             avatar_url: None, // No avatar provided
             raw_data: user_res,

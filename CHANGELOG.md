@@ -5,7 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.0.1] - Unreleased
+## [5.0.2] - 2026-05-27
+
+### Performance
+- **Optimized String allocations**: Replaced `String::new()` with `String::with_capacity(256)` in all 33 providers' `redirect_url` methods, reducing unnecessary reallocations and improving performance.
+
+### Developer Experience
+- **Fixed README example**: Corrected compilation bug in the README.md code example (line 103) where the `Err` branch was incorrectly placed inside the `Ok` block.
+
+### Maintenance
+- **Removed dead code**: Deleted `src/utils.rs` file which was no longer used after the PR-29 refactoring that inlined URL parameter serialization logic directly into providers.
+
+### Internal
+- **Code cleanup**: Removed unused module imports and references to the deleted `utils.rs` module from `lib.rs`.
+
+### Compatibility
+- **Breaking Changes**: None
+- **API Changes**: None
+- **Migration Guide**: No migration required - fully backward compatible with v5.0.1
+
+## [5.0.1] - 2026-05-27
 
 ### Added
 - **Tokens returned on User**: `SocialiteUser` now contains `access_token`, `refresh_token`, and `expires_in` fields so you can interact with the provider's API immediately.

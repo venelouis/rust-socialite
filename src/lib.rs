@@ -6,7 +6,6 @@ pub mod prelude;
 pub mod provider;
 pub mod providers;
 pub mod user;
-pub mod utils;
 
 #[macro_use]
 pub mod macros;

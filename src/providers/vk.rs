@@ -9,7 +9,7 @@ crate::define_provider!(VkProvider);
 #[async_trait]
 impl Provider for VkProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
         params
             .append_pair("client_id", &self.client_id)
             .append_pair("display", "page")

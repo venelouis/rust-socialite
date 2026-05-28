@@ -64,7 +64,7 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "5.0.1"
+rust-socialite = "5.0.2"
 tokio = { version = "1.52", features = ["full"] }
 ```
 
@@ -100,8 +100,8 @@ match github.get_user(code).await {
         println!("Welcome, {}!", user.name);
         println!("Email: {:?}", user.email);
         println!("Avatar: {:?}", user.avatar_url);
-        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to get user".to_string()),
     }
+    Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to get user".to_string()),
 }
 ```
 

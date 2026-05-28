@@ -10,7 +10,7 @@ crate::define_provider!(PinterestProvider, "user_accounts:read");
 #[async_trait]
 impl Provider for PinterestProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
         params.append_pair("client_id", &self.client_id);
         params.append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
