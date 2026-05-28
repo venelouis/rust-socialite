@@ -1,6 +1,6 @@
-# Security Audit Report (v5.0.0)
+# Security Audit Report (v5.0.2)
 
-This document outlines the security, performance, and stability enhancements implemented during the v5.0.0 Enterprise Audit for `rust-socialite`.
+This document outlines the security, performance, and stability enhancements implemented during the v5.0.0 Enterprise Audit for `rust-socialite`, with additional improvements in v5.0.2.
 
 ## 1. Zero-Panic Dynamic Domain Parsing
 **Issue:** Providers with custom user-provided domains (Auth0, Okta, AWS Cognito) previously used `.unwrap()` when parsing the base URL string. If a developer passed an invalid domain string from their environment variables, the library would `panic!`, causing a Denial of Service (DoS) crash for the web thread.

@@ -4,8 +4,6 @@
 [![Documentation](https://docs.rs/rust-socialite/badge.svg)](https://docs.rs/rust-socialite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> 🇧🇷 *Para a versão em Português, veja o [README_pt.md](README_pt.md).*
-
 **Rust Socialite** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
 
 ## ✨ Features
