@@ -14,17 +14,13 @@ impl Provider for YahooProvider {
         params.append_pair("client_id", &self.client_id);
         params.append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
-        if !self.scopes.is_empty() {
-            params.append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            params.append_pair("state", state);
-        }
+        crate::utils::append_auth_params(
+            &mut params,
+            &self.scopes,
+            &self.state,
+            &self.pkce_challenge,
+        );
 
-        if let Some(pkce) = &self.pkce_challenge {
-            params.append_pair("code_challenge", pkce);
-            params.append_pair("code_challenge_method", "S256");
-        }
         format!(
             "https://api.login.yahoo.com/oauth2/request_auth?{}",
             params.finish()

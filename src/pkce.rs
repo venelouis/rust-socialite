@@ -32,7 +32,11 @@ mod tests {
     #[test]
     fn test_generate_pkce_length() {
         let (verifier, _) = generate_pkce();
-        assert_eq!(verifier.len(), 64, "Code verifier should be 64 characters long");
+        assert_eq!(
+            verifier.len(),
+            64,
+            "Code verifier should be 64 characters long"
+        );
     }
 
     #[test]
@@ -45,8 +49,14 @@ mod tests {
         let result = hasher.finalize();
         let expected_challenge = general_purpose::URL_SAFE_NO_PAD.encode(result);
 
-        assert_eq!(challenge, expected_challenge, "Challenge should match base64-url-encoded SHA256 of verifier");
-        assert!(!challenge.contains('='), "Challenge should not contain padding characters");
+        assert_eq!(
+            challenge, expected_challenge,
+            "Challenge should match base64-url-encoded SHA256 of verifier"
+        );
+        assert!(
+            !challenge.contains('='),
+            "Challenge should not contain padding characters"
+        );
     }
 
     #[test]
@@ -54,7 +64,13 @@ mod tests {
         let (verifier1, challenge1) = generate_pkce();
         let (verifier2, challenge2) = generate_pkce();
 
-        assert_ne!(verifier1, verifier2, "Multiple calls should generate unique verifiers");
-        assert_ne!(challenge1, challenge2, "Multiple calls should generate unique challenges");
+        assert_ne!(
+            verifier1, verifier2,
+            "Multiple calls should generate unique verifiers"
+        );
+        assert_ne!(
+            challenge1, challenge2,
+            "Multiple calls should generate unique challenges"
+        );
     }
 }

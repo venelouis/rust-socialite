@@ -11,24 +11,19 @@ impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
         let mut query = url::form_urlencoded::Serializer::new(String::new());
         query.append_pair("response_type", "code");
-        query
-            .append_pair("client_id", &self.client_id);
-        query
-            .append_pair("redirect_uri", &self.redirect_url);
-        if !self.scopes.is_empty() {
-            query
-                .append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            query.append_pair("state", state);
-        }
+        query.append_pair("client_id", &self.client_id);
+        query.append_pair("redirect_uri", &self.redirect_url);
+        crate::utils::append_auth_params(
+            &mut query,
+            &self.scopes,
+            &self.state,
+            &self.pkce_challenge,
+        );
 
-        if let Some(pkce) = &self.pkce_challenge {
-            query.append_pair("code_challenge", pkce);
-            query
-                .append_pair("code_challenge_method", "S256");
-        }
-        format!("https://connect.stripe.com/oauth/authorize?{}", query.finish())
+        format!(
+            "https://connect.stripe.com/oauth/authorize?{}",
+            query.finish()
+        )
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
