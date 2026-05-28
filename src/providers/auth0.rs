@@ -43,14 +43,10 @@ impl Auth0Provider {
 #[async_trait]
 impl Provider for Auth0Provider {
     fn redirect_url(&self) -> String {
-        let base_url = format!("https://{}/authorize", self.domain);
-        let mut url = url::Url::parse(&base_url)
-            .unwrap_or_else(|_| url::Url::parse("https://auth0.com/authorize").unwrap());
-        url.query_pairs_mut()
-            .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut()
-            .append_pair("redirect_uri", &self.redirect_url);
-        url.query_pairs_mut().append_pair("response_type", "code");
+        let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("response_type", "code");
         if !self.scopes.is_empty() {
             params
                 .append_pair("scope", &self.scopes.join(" "));
