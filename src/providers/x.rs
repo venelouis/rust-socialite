@@ -33,6 +33,7 @@ impl Provider for XProvider {
     }
 
     async fn get_user(&self, _auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+        let _ = &self.client_secret;
         Err(SocialiteError::Provider(
             "X (Twitter) requires PKCE. Use get_user_with_pkce instead.".to_string(),
         ))
