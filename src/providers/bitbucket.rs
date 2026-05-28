@@ -8,9 +8,11 @@ crate::define_provider!(BitbucketProvider);
 #[async_trait]
 impl Provider for BitbucketProvider {
     fn redirect_url(&self) -> String {
-let mut params = url::form_urlencoded::Serializer::new(String::new());
-        params
-
+        let mut url = match url::Url::parse("https://bitbucket.org/site/oauth2/authorize") {
+            Ok(u) => u,
+            Err(_) => return String::new(),
+        };
+        url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         params.append_pair("response_type", "code");
         params

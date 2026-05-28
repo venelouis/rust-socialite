@@ -2,21 +2,19 @@ use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
+use url::form_urlencoded;
 
 crate::define_provider!(GithubProvider, "user:email");
 
 #[async_trait]
 impl Provider for GithubProvider {
     fn redirect_url(&self) -> String {
-let mut params = url::form_urlencoded::Serializer::new(String::new());
-        params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
-        if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+        let mut params = form_urlencoded::Serializer::new(String::new());
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
 
+        if !self.scopes.is_empty() {
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -24,11 +22,13 @@ let mut params = url::form_urlencoded::Serializer::new(String::new());
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://github.com/login/oauth/authorize?{}", params.finish())
 
+        format!(
+            "https://github.com/login/oauth/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(

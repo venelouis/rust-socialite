@@ -4,22 +4,21 @@ use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
+use url::form_urlencoded;
 
 crate::define_provider!(SnapchatProvider, "snapchat-api.read");
 
 #[async_trait]
 impl Provider for SnapchatProvider {
     fn redirect_url(&self) -> String {
-let mut params = url::form_urlencoded::Serializer::new(String::new());
+        let mut params = form_urlencoded::Serializer::new(String::new());
         params
-            .append_pair("client_id", &self.client_id);
-        params
-            .append_pair("redirect_uri", &self.redirect_url);
-        params.append_pair("response_type", "code");
-        if !self.scopes.is_empty() {
-            params
-                .append_pair("scope", &self.scopes.join(" "));
+            .append_pair("client_id", &self.client_id)
+            .append_pair("redirect_uri", &self.redirect_url)
+            .append_pair("response_type", "code");
 
+        if !self.scopes.is_empty() {
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -27,11 +26,13 @@ let mut params = url::form_urlencoded::Serializer::new(String::new());
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-params
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge_method", "S256");
         }
-        format!("https://accounts.snapchat.com/login/oauth2/authorize?{}", params.finish())
 
+        format!(
+            "https://accounts.snapchat.com/login/oauth2/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

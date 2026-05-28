@@ -6,7 +6,10 @@ use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::sync::OnceLock;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+static CLIENT: OnceLock<Client> = OnceLock::new();
 
 pub struct AppleProvider {
     client_id: String,
@@ -45,7 +48,7 @@ impl AppleProvider {
             key_id,
             private_key_pem,
             redirect_url,
-            http_client: Client::new(),
+            http_client: CLIENT.get_or_init(Client::new).clone(),
             scopes: vec!["name".to_string(), "email".to_string()],
             state: None,
             pkce_challenge: None,
