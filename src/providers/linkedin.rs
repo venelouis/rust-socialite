@@ -8,26 +8,22 @@ crate::define_provider!(LinkedinProvider, "profile", "email", "openid");
 #[async_trait]
 impl Provider for LinkedinProvider {
     fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
-        let mut url = url::Url::parse("https://www.linkedin.com/oauth/v2/authorization")?;
-        url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut()
-            .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut()
-            .append_pair("redirect_uri", &self.redirect_url);
+        let mut query = url::form_urlencoded::Serializer::new(String::new());
+        query.append_pair("response_type", "code");
+        query.append_pair("client_id", &self.client_id);
+        query.append_pair("redirect_uri", &self.redirect_url);
         if !self.scopes.is_empty() {
-            url.query_pairs_mut()
-                .append_pair("scope", &self.scopes.join(" "));
+            query.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
-            url.query_pairs_mut().append_pair("state", state);
+            query.append_pair("state", state);
         }
 
         if let Some(pkce) = &self.pkce_challenge {
-            url.query_pairs_mut().append_pair("code_challenge", pkce);
-            url.query_pairs_mut()
-                .append_pair("code_challenge_method", "S256");
+            query.append_pair("code_challenge", pkce);
+            query.append_pair("code_challenge_method", "S256");
         }
-        Ok(url.into())
+        Ok(format!("https://www.linkedin.com/oauth/v2/authorization?{}", query.finish()))
     }
 
     async fn get_user(

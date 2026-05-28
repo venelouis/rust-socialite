@@ -16,7 +16,7 @@ pub trait Provider: Send + Sync {
         } else {
             "?"
         };
-        Ok(format!("{}{separator}state={state}", url))
+        Ok(format!("{url}{separator}state={state}"))
     }
 
     /// Returns the authorization URL with a PKCE `code_challenge` appended.
@@ -83,5 +83,93 @@ pub trait Provider: Send + Sync {
         Err(crate::error::SocialiteError::Token(
             "Token revocation is not supported by this provider".to_string(),
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use async_trait::async_trait;
+
+    struct DummyProvider {
+        base_url: String,
+    }
+
+    #[async_trait]
+    impl Provider for DummyProvider {
+        fn redirect_url(&self) -> Result<String, crate::error::SocialiteError> {
+            Ok(self.base_url.clone())
+        }
+
+        async fn get_user(
+            &self,
+            _auth_code: &str,
+        ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+            unimplemented!()
+        }
+
+        async fn get_user_from_token(
+            &self,
+            _access_token: &str,
+        ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+            unimplemented!()
+        }
+    }
+
+    #[test]
+    fn test_redirect_url_with_state() {
+        let provider_no_query = DummyProvider {
+            base_url: "https://example.com/auth".to_string(),
+        };
+        assert_eq!(
+            provider_no_query.redirect_url_with_state("my_state").unwrap(),
+            "https://example.com/auth?state=my_state"
+        );
+
+        let provider_with_query = DummyProvider {
+            base_url: "https://example.com/auth?client_id=123".to_string(),
+        };
+        assert_eq!(
+            provider_with_query.redirect_url_with_state("my_state").unwrap(),
+            "https://example.com/auth?client_id=123&state=my_state"
+        );
+    }
+
+    #[test]
+    fn test_redirect_url_with_pkce() {
+        let provider_no_query = DummyProvider {
+            base_url: "https://example.com/auth".to_string(),
+        };
+        assert_eq!(
+            provider_no_query.redirect_url_with_pkce("my_challenge").unwrap(),
+            "https://example.com/auth?code_challenge=my_challenge&code_challenge_method=S256"
+        );
+
+        let provider_with_query = DummyProvider {
+            base_url: "https://example.com/auth?client_id=123".to_string(),
+        };
+        assert_eq!(
+            provider_with_query.redirect_url_with_pkce("my_challenge").unwrap(),
+            "https://example.com/auth?client_id=123&code_challenge=my_challenge&code_challenge_method=S256"
+        );
+    }
+
+    #[test]
+    fn test_redirect_url_with_pkce_and_state() {
+        let provider_no_query = DummyProvider {
+            base_url: "https://example.com/auth".to_string(),
+        };
+        assert_eq!(
+            provider_no_query.redirect_url_with_pkce_and_state("my_challenge", "my_state").unwrap(),
+            "https://example.com/auth?code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
+        );
+
+        let provider_with_query = DummyProvider {
+            base_url: "https://example.com/auth?client_id=123".to_string(),
+        };
+        assert_eq!(
+            provider_with_query.redirect_url_with_pkce_and_state("my_challenge", "my_state").unwrap(),
+            "https://example.com/auth?client_id=123&code_challenge=my_challenge&code_challenge_method=S256&state=my_state"
+        );
     }
 }
