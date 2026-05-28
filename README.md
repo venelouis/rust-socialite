@@ -14,11 +14,11 @@
 - 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
 
 > 📚 **Important Documents:**
-> - [CHANGELOG.md](CHANGELOG.md): See what's new in v5.0.0.
+> - [CHANGELOG.md](CHANGELOG.md): See what's new in v5.0.2.
 > - [ROADMAP.md](ROADMAP.md): Discover our path to v1.0.0.
-> - [SECURITY_AUDIT.md](SECURITY_AUDIT.md): Detailed report on the v5.0.0 Enterprise Security Audit.
+> - [AUDIT.md](AUDIT.md): Complete security, performance, and maintainability audit report.
 
-## 📦 Supported Providers (v5.0.0)
+## 📦 Supported Providers (v5.0.2)
 
 Official support for 33 major providers:
 
