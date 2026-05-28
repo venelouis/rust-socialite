@@ -8,7 +8,8 @@ crate::define_provider!(GitlabProvider, "read_user");
 #[async_trait]
 impl Provider for GitlabProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://gitlab.com/oauth/authorize").unwrap();
+        let mut url = url::Url::parse("https://gitlab.com/oauth/authorize")
+            .expect("Invalid authorization URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

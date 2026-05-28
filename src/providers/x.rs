@@ -9,7 +9,8 @@ crate::define_provider!(XProvider, "users.read", "tweet.read");
 #[async_trait]
 impl Provider for XProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://twitter.com/i/oauth2/authorize").unwrap();
+        let mut url = url::Url::parse("https://twitter.com/i/oauth2/authorize")
+            .expect("Invalid authorization URL");
         url.query_pairs_mut().append_pair("response_type", "code");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);

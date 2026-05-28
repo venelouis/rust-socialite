@@ -10,7 +10,8 @@ crate::define_provider!(YahooProvider);
 #[async_trait]
 impl Provider for YahooProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://api.login.yahoo.com/oauth2/request_auth").unwrap();
+        let mut url = url::Url::parse("https://api.login.yahoo.com/oauth2/request_auth")
+            .expect("Invalid authorization URL");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
         url.query_pairs_mut()

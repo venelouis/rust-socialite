@@ -9,7 +9,8 @@ crate::define_provider!(BasecampProvider);
 #[async_trait]
 impl Provider for BasecampProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://launchpad.37signals.com/authorization/new").unwrap();
+        let mut url = url::Url::parse("https://launchpad.37signals.com/authorization/new")
+            .expect("Invalid authorization URL");
         url.query_pairs_mut().append_pair("type", "web_server");
         url.query_pairs_mut()
             .append_pair("client_id", &self.client_id);
