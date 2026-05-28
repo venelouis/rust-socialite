@@ -21,3 +21,10 @@ This document outlines the security, performance, and stability enhancements imp
 ## 5. Developer Experience (DX) Prelude
 **Issue:** Managing multiple imports for traits, error types, frameworks extractors, and providers caused friction.
 **Resolution:** Created `rust_socialite::prelude::*`, securely exporting `Provider`, `SocialiteUser`, `SocialiteError`, `AuthCallback`, and all 33 providers dynamically. This is particularly optimized for AI coding assistants to quickly scaffold authentication systems without missing imports.
+
+## 6. Additional Security Enhancements (v5.0.2)
+**Issue:** String allocations in `redirect_url` methods used `String::new()` which causes unnecessary reallocations.
+**Resolution:** Optimized all 33 providers to use `String::with_capacity(256)` for better performance and reduced memory allocations.
+
+**Issue:** Dead code (`src/utils.rs`) remained in the codebase after refactoring.
+**Resolution:** Removed unused `utils.rs` module and inlined the logic directly into providers for better maintainability.

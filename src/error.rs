@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-/// Erros oficiais da biblioteca Rust Socialite
+/// Official errors of the Rust Socialite library
 #[derive(Error, Debug)]
 pub enum SocialiteError {
     #[error("HTTP request failed: {0}")]
