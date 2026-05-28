@@ -4,34 +4,36 @@ use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use base64::{Engine as _, engine::general_purpose};
 use serde_json::Value;
+use url::form_urlencoded;
 
 crate::define_provider!(RedditProvider, "identity");
 
 #[async_trait]
 impl Provider for RedditProvider {
     fn redirect_url(&self) -> String {
-        let mut url = url::Url::parse("https://www.reddit.com/api/v1/authorize").unwrap();
-        url.query_pairs_mut()
-            .append_pair("client_id", &self.client_id);
-        url.query_pairs_mut().append_pair("response_type", "code");
-        url.query_pairs_mut().append_pair("state", "socialite");
-        url.query_pairs_mut()
-            .append_pair("redirect_uri", &self.redirect_url);
-        url.query_pairs_mut().append_pair("duration", "temporary");
+        let mut params = form_urlencoded::Serializer::new(String::new());
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("response_type", "code");
+        params.append_pair("state", "socialite");
+        params.append_pair("redirect_uri", &self.redirect_url);
+        params.append_pair("duration", "temporary");
+
         if !self.scopes.is_empty() {
-            url.query_pairs_mut()
-                .append_pair("scope", &self.scopes.join(" "));
+            params.append_pair("scope", &self.scopes.join(" "));
         }
         if let Some(state) = &self.state {
-            url.query_pairs_mut().append_pair("state", state);
+            params.append_pair("state", state);
         }
 
         if let Some(pkce) = &self.pkce_challenge {
-            url.query_pairs_mut().append_pair("code_challenge", pkce);
-            url.query_pairs_mut()
-                .append_pair("code_challenge_method", "S256");
+            params.append_pair("code_challenge", pkce);
+            params.append_pair("code_challenge_method", "S256");
         }
-        url.into()
+
+        format!(
+            "https://www.reddit.com/api/v1/authorize?{}",
+            params.finish()
+        )
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

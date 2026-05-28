@@ -56,3 +56,44 @@ impl actix_web::FromRequest for AuthCallback {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_auth_callback_success_deserialization() {
+        let query = "code=auth_code_123&state=state_xyz";
+        let callback: AuthCallback = serde_urlencoded::from_str(query).unwrap();
+
+        assert_eq!(callback.code.as_deref(), Some("auth_code_123"));
+        assert_eq!(callback.state.as_deref(), Some("state_xyz"));
+        assert_eq!(callback.error, None);
+        assert_eq!(callback.error_description, None);
+    }
+
+    #[test]
+    fn test_auth_callback_error_deserialization() {
+        let query = "error=access_denied&error_description=User%20denied%20access&state=state_xyz";
+        let callback: AuthCallback = serde_urlencoded::from_str(query).unwrap();
+
+        assert_eq!(callback.code, None);
+        assert_eq!(callback.state.as_deref(), Some("state_xyz"));
+        assert_eq!(callback.error.as_deref(), Some("access_denied"));
+        assert_eq!(
+            callback.error_description.as_deref(),
+            Some("User denied access")
+        );
+    }
+
+    #[test]
+    fn test_auth_callback_empty_deserialization() {
+        let query = "";
+        let callback: AuthCallback = serde_urlencoded::from_str(query).unwrap();
+
+        assert_eq!(callback.code, None);
+        assert_eq!(callback.state, None);
+        assert_eq!(callback.error, None);
+        assert_eq!(callback.error_description, None);
+    }
+}
