@@ -8,7 +8,7 @@ crate::define_provider!(GithubProvider, "user:email");
 #[async_trait]
 impl Provider for GithubProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+let mut params = url::form_urlencoded::Serializer::new(String::new());
         params
             .append_pair("client_id", &self.client_id);
         params
@@ -16,6 +16,7 @@ impl Provider for GithubProvider {
         if !self.scopes.is_empty() {
             params
                 .append_pair("scope", &self.scopes.join(" "));
+
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -23,10 +24,11 @@ impl Provider for GithubProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
+params
                 .append_pair("code_challenge_method", "S256");
         }
         format!("https://github.com/login/oauth/authorize?{}", params.finish())
+
     }
 
     async fn get_user(
@@ -49,6 +51,14 @@ impl Provider for GithubProvider {
             .error_for_status()?
             .json::<Value>()
             .await?;
+
+        if let Some(err) = token_res["error"].as_str() {
+            let err_desc = token_res["error_description"].as_str().unwrap_or("");
+            return Err(crate::error::SocialiteError::Token(format!(
+                "Provider returned error: {} - {}",
+                err, err_desc
+            )));
+        }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
             crate::error::SocialiteError::Token("Failed to get access_token".to_string())

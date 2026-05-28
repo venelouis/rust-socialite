@@ -43,11 +43,11 @@ impl Auth0Provider {
 #[async_trait]
 impl Provider for Auth0Provider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
-        params.append_pair("client_id", &self.domain);
-        params
-            .append_pair("redirect_uri", &self.client_id);
+let mut params = url::form_urlencoded::Serializer::new(String::new());
+        params.append_pair("client_id", &self.client_id);
+        params.append_pair("redirect_uri", &self.redirect_url);
         params.append_pair("response_type", "code");
+
         if !self.scopes.is_empty() {
             params
                 .append_pair("scope", &self.scopes.join(" "));
@@ -117,5 +117,40 @@ impl Provider for Auth0Provider {
             refresh_token: None,
             expires_in: None,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::provider::Provider;
+
+    #[test]
+    fn test_redirect_url() {
+        let provider = Auth0Provider::new(
+            "client_id".to_string(),
+            "client_secret".to_string(),
+            "https://redirect.url".to_string(),
+            "test.auth0.com".to_string(),
+        );
+
+        let url = provider.redirect_url();
+        assert!(url.starts_with("https://test.auth0.com/authorize?"));
+        assert!(url.contains("client_id=client_id"));
+        assert!(url.contains("redirect_uri=https%3A%2F%2Fredirect.url"));
+    }
+
+    #[test]
+    fn test_redirect_url_invalid_domain() {
+        let provider = Auth0Provider::new(
+            "client_id".to_string(),
+            "client_secret".to_string(),
+            "https://redirect.url".to_string(),
+            "invalid domain".to_string(), // Space makes it invalid
+        );
+
+        let url = provider.redirect_url();
+        // Should fall back gracefully and not panic
+        assert!(url.starts_with("https://invalid domain/authorize?"));
     }
 }

@@ -11,7 +11,7 @@ impl Provider for VkProvider {
     fn redirect_url(&self) -> String {
         let mut params = url::form_urlencoded::Serializer::new(String::new());
         params
-            .append_pair("client_id", &self.client_id);
+.append_pair("client_id", &self.client_id);
         params.append_pair("display", "page");
         params
             .append_pair("redirect_uri", &self.redirect_url);
@@ -20,6 +20,7 @@ impl Provider for VkProvider {
         if !self.scopes.is_empty() {
             params
                 .append_pair("scope", &self.scopes.join(" "));
+
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -27,9 +28,10 @@ impl Provider for VkProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
+params
                 .append_pair("code_challenge_method", "S256");
         }
+
         format!("https://oauth.vk.com/authorize?{}", params.finish())
     }
 

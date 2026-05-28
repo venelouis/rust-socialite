@@ -9,7 +9,7 @@ crate::define_provider!(StripeProvider, "read_write");
 #[async_trait]
 impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+let mut params = url::form_urlencoded::Serializer::new(String::new());
         params.append_pair("response_type", "code");
         params
             .append_pair("client_id", &self.client_id);
@@ -29,6 +29,7 @@ impl Provider for StripeProvider {
                 .append_pair("code_challenge_method", "S256");
         }
         format!("https://connect.stripe.com/oauth/authorize?{}", params.finish())
+
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {

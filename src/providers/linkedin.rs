@@ -8,7 +8,7 @@ crate::define_provider!(LinkedinProvider, "profile", "email", "openid");
 #[async_trait]
 impl Provider for LinkedinProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+let mut params = url::form_urlencoded::Serializer::new(String::new());
         params.append_pair("response_type", "code");
         params
             .append_pair("client_id", &self.client_id);
@@ -28,6 +28,7 @@ impl Provider for LinkedinProvider {
                 .append_pair("code_challenge_method", "S256");
         }
         format!("https://www.linkedin.com/oauth/v2/authorization?{}", params.finish())
+
     }
 
     async fn get_user(

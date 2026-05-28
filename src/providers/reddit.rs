@@ -10,7 +10,7 @@ crate::define_provider!(RedditProvider, "identity");
 #[async_trait]
 impl Provider for RedditProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::new());
+let mut params = url::form_urlencoded::Serializer::new(String::new());
         params
             .append_pair("client_id", &self.client_id);
         params.append_pair("response_type", "code");
@@ -21,6 +21,7 @@ impl Provider for RedditProvider {
         if !self.scopes.is_empty() {
             params
                 .append_pair("scope", &self.scopes.join(" "));
+
         }
         if let Some(state) = &self.state {
             params.append_pair("state", state);
@@ -28,9 +29,10 @@ impl Provider for RedditProvider {
 
         if let Some(pkce) = &self.pkce_challenge {
             params.append_pair("code_challenge", pkce);
-            params
+params
                 .append_pair("code_challenge_method", "S256");
         }
+
         format!("https://www.reddit.com/api/v1/authorize?{}", params.finish())
     }
 
