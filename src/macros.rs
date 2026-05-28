@@ -71,7 +71,10 @@ mod tests {
         assert_eq!(provider.client_id, "client_id");
         assert_eq!(provider.client_secret, "client_secret");
         assert_eq!(provider.redirect_url, "redirect_url");
-        assert_eq!(provider.scopes, vec!["default_scope1".to_string(), "default_scope2".to_string()]);
+        assert_eq!(
+            provider.scopes,
+            vec!["default_scope1".to_string(), "default_scope2".to_string()]
+        );
         assert_eq!(provider.state, None);
         assert_eq!(provider.pkce_challenge, None);
     }
@@ -82,9 +85,13 @@ mod tests {
             "client_id".to_string(),
             "client_secret".to_string(),
             "redirect_url".to_string(),
-        ).with_scopes(&["new_scope1", "new_scope2"]);
+        )
+        .with_scopes(&["new_scope1", "new_scope2"]);
 
-        assert_eq!(provider.scopes, vec!["new_scope1".to_string(), "new_scope2".to_string()]);
+        assert_eq!(
+            provider.scopes,
+            vec!["new_scope1".to_string(), "new_scope2".to_string()]
+        );
     }
 
     #[test]
@@ -93,7 +100,8 @@ mod tests {
             "client_id".to_string(),
             "client_secret".to_string(),
             "redirect_url".to_string(),
-        ).with_state("my_state");
+        )
+        .with_state("my_state");
 
         assert_eq!(provider.state, Some("my_state".to_string()));
     }
@@ -104,8 +112,12 @@ mod tests {
             "client_id".to_string(),
             "client_secret".to_string(),
             "redirect_url".to_string(),
-        ).with_pkce("my_pkce_challenge");
+        )
+        .with_pkce("my_pkce_challenge");
 
-        assert_eq!(provider.pkce_challenge, Some("my_pkce_challenge".to_string()));
+        assert_eq!(
+            provider.pkce_challenge,
+            Some("my_pkce_challenge".to_string())
+        );
     }
 }

@@ -17,19 +17,13 @@ impl Provider for SlackProvider {
             "user_scope",
             "identity.basic,identity.email,identity.avatar",
         );
-        if !self.scopes.is_empty() {
-            url.query_pairs_mut()
-                .append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            url.query_pairs_mut().append_pair("state", state);
-        }
+        crate::utils::append_auth_params(
+            &mut url.query_pairs_mut(),
+            &self.scopes,
+            &self.state,
+            &self.pkce_challenge,
+        );
 
-        if let Some(pkce) = &self.pkce_challenge {
-            url.query_pairs_mut().append_pair("code_challenge", pkce);
-            url.query_pairs_mut()
-                .append_pair("code_challenge_method", "S256");
-        }
         url.into()
     }
 

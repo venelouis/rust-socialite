@@ -12,18 +12,12 @@ impl Provider for GithubProvider {
         let mut params = form_urlencoded::Serializer::new(String::new());
         params.append_pair("client_id", &self.client_id);
         params.append_pair("redirect_uri", &self.redirect_url);
-
-        if !self.scopes.is_empty() {
-            params.append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            params.append_pair("state", state);
-        }
-
-        if let Some(pkce) = &self.pkce_challenge {
-            params.append_pair("code_challenge", pkce);
-            params.append_pair("code_challenge_method", "S256");
-        }
+        crate::utils::append_auth_params(
+            &mut params,
+            &self.scopes,
+            &self.state,
+            &self.pkce_challenge,
+        );
 
         format!(
             "https://github.com/login/oauth/authorize?{}",
