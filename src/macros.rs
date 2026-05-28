@@ -21,11 +21,13 @@ macro_rules! define_provider {
 
         impl $name {
             pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
+                static CLIENT: std::sync::LazyLock<reqwest::Client> =
+                    std::sync::LazyLock::new(reqwest::Client::new);
                 Self {
                     client_id,
                     client_secret,
                     redirect_url,
-                    http_client: reqwest::Client::new(),
+                    http_client: CLIENT.clone(),
                     scopes: vec![$($default_scope.to_string()),*],
                     state: None,
                     pkce_challenge: None,
@@ -51,4 +53,59 @@ macro_rules! define_provider {
             }
         }
     };
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(dead_code)]
+    define_provider!(DummyProvider, "default_scope1", "default_scope2");
+
+    #[test]
+    fn test_macro_generated_struct_new() {
+        let provider = DummyProvider::new(
+            "client_id".to_string(),
+            "client_secret".to_string(),
+            "redirect_url".to_string(),
+        );
+
+        assert_eq!(provider.client_id, "client_id");
+        assert_eq!(provider.client_secret, "client_secret");
+        assert_eq!(provider.redirect_url, "redirect_url");
+        assert_eq!(provider.scopes, vec!["default_scope1".to_string(), "default_scope2".to_string()]);
+        assert_eq!(provider.state, None);
+        assert_eq!(provider.pkce_challenge, None);
+    }
+
+    #[test]
+    fn test_macro_generated_struct_with_scopes() {
+        let provider = DummyProvider::new(
+            "client_id".to_string(),
+            "client_secret".to_string(),
+            "redirect_url".to_string(),
+        ).with_scopes(&["new_scope1", "new_scope2"]);
+
+        assert_eq!(provider.scopes, vec!["new_scope1".to_string(), "new_scope2".to_string()]);
+    }
+
+    #[test]
+    fn test_macro_generated_struct_with_state() {
+        let provider = DummyProvider::new(
+            "client_id".to_string(),
+            "client_secret".to_string(),
+            "redirect_url".to_string(),
+        ).with_state("my_state");
+
+        assert_eq!(provider.state, Some("my_state".to_string()));
+    }
+
+    #[test]
+    fn test_macro_generated_struct_with_pkce() {
+        let provider = DummyProvider::new(
+            "client_id".to_string(),
+            "client_secret".to_string(),
+            "redirect_url".to_string(),
+        ).with_pkce("my_pkce_challenge");
+
+        assert_eq!(provider.pkce_challenge, Some("my_pkce_challenge".to_string()));
+    }
 }
