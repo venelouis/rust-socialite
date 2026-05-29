@@ -66,9 +66,15 @@ Official support for 33 major providers:
 
 Add the package to your `Cargo.toml`. If you use **Rullst**, **Axum**, **Actix**, or **Leptos**, you can enable their specific features for native Extractor support!
 
+You can either run:
+```bash
+cargo add rust-socialite
+```
+
+Or manually add it to your `Cargo.toml`:
 ```toml
 [dependencies]
-rust-socialite = "5.2.0"
+rust-socialite = "5.2.2"
 tokio = { version = "1.52", features = ["full"] }
 ```
 
