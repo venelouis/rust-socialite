@@ -1,6 +1,11 @@
 pub mod client;
 pub mod error;
-#[cfg(any(feature = "axum", feature = "actix", feature = "leptos", feature = "rullst"))]
+#[cfg(any(
+    feature = "axum",
+    feature = "actix",
+    feature = "leptos",
+    feature = "rullst"
+))]
 pub mod extractors;
 pub mod pkce;
 pub mod prelude;

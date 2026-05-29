@@ -70,7 +70,9 @@ impl Provider for TwitchProvider {
             .await?;
 
         if !user_res["data"].is_array() || user_res["data"].as_array().unwrap().is_empty() {
-            return Err(crate::error::SocialiteError::Provider("No user data returned".to_string()));
+            return Err(crate::error::SocialiteError::Provider(
+                "No user data returned".to_string(),
+            ));
         }
 
         let user_data = &user_res["data"][0];

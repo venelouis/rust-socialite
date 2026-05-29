@@ -1,7 +1,7 @@
+use async_trait::async_trait;
 use rust_socialite::client::{HttpClient, HttpRequest, HttpResponse};
 use rust_socialite::provider::Provider;
 use rust_socialite::providers::GithubProvider;
-use async_trait::async_trait;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
@@ -40,30 +40,26 @@ async fn test_github_get_user_success() {
     // 1. Mock the token exchange endpoint
     Mock::given(method("POST"))
         .and(path("/login/oauth/access_token"))
-        .respond_with(
-            ResponseTemplate::new(200).set_body_json(serde_json::json!({
-                "access_token": "mock_access_token_123",
-                "token_type": "bearer",
-                "scope": "repo,gist",
-                "refresh_token": "mock_refresh_token_abc",
-                "expires_in": 3600
-            })),
-        )
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+            "access_token": "mock_access_token_123",
+            "token_type": "bearer",
+            "scope": "repo,gist",
+            "refresh_token": "mock_refresh_token_abc",
+            "expires_in": 3600
+        })))
         .mount(&mock_server)
         .await;
 
     // 2. Mock the user profile endpoint
     Mock::given(method("GET"))
         .and(path("/user"))
-        .respond_with(
-            ResponseTemplate::new(200).set_body_json(serde_json::json!({
-                "id": 123456,
-                "login": "octocat",
-                "name": "The Octocat",
-                "email": "octocat@github.com",
-                "avatar_url": "https://github.com/images/error/octocat_happy.gif",
-            })),
-        )
+        .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
+            "id": 123456,
+            "login": "octocat",
+            "name": "The Octocat",
+            "email": "octocat@github.com",
+            "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+        })))
         .mount(&mock_server)
         .await;
 
@@ -87,7 +83,10 @@ async fn test_github_get_user_success() {
         Some("https://github.com/images/error/octocat_happy.gif")
     );
     assert_eq!(user.access_token, "mock_access_token_123");
-    assert_eq!(user.refresh_token.as_deref(), Some("mock_refresh_token_abc"));
+    assert_eq!(
+        user.refresh_token.as_deref(),
+        Some("mock_refresh_token_abc")
+    );
     assert_eq!(user.expires_in, Some(3600));
 }
 
@@ -98,12 +97,10 @@ async fn test_github_token_error() {
     // Mock an error response from the provider during token exchange
     Mock::given(method("POST"))
         .and(path("/login/oauth/access_token"))
-        .respond_with(
-            ResponseTemplate::new(400).set_body_json(serde_json::json!({
-                "error": "invalid_grant",
-                "error_description": "The code passed is incorrect or expired."
-            })),
-        )
+        .respond_with(ResponseTemplate::new(400).set_body_json(serde_json::json!({
+            "error": "invalid_grant",
+            "error_description": "The code passed is incorrect or expired."
+        })))
         .mount(&mock_server)
         .await;
 
@@ -116,7 +113,7 @@ async fn test_github_token_error() {
     .with_http_client(intercept_client);
 
     let err = provider.get_user("bad_code").await.unwrap_err();
-    
+
     // Using string matching since SocialiteError implements Display but maybe not PartialEq
     assert!(err.to_string().contains("HTTP Error: 400"));
 }
