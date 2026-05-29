@@ -168,6 +168,20 @@ You can find a complete working server using the **Axum** framework in the examp
 cargo run --example axum_server
 ```
 
+## 📦 Releasing a New Version
+
+This project uses `cargo-release` to automate version bumps, README synchronization, and CHANGELOG management.
+To release a new version, simply run:
+
+```bash
+# install it first if you haven't: cargo install cargo-release
+cargo release patch --execute  # for v1.0.x patches
+cargo release minor --execute  # for v1.x.0 features
+cargo release major --execute  # for vX.0.0 breaking changes
+```
+
+This will automatically bump versions, tag the release, and push to GitHub, triggering our CI publish workflow.
+
 ## 🤝 Contributing
 
 Feel free to open Issues and submit Pull Requests! Want to add a new provider? It's easy! Just implement the `Provider` trait.
