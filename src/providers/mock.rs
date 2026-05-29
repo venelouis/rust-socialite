@@ -33,6 +33,10 @@ impl Provider for MockProvider {
         self.mocked_url.clone()
     }
 
+    fn token_url(&self) -> String {
+        "https://mock.provider/token".to_string()
+    }
+
     async fn get_user(
         &self,
         _auth_code: &str,

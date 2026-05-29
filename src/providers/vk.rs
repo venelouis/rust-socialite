@@ -34,11 +34,19 @@ impl Provider for VkProvider {
     }
 
     async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
-        let token_res = self.http_client.get(format!(
-            "https://oauth.vk.com/access_token?client_id={}&client_secret={}&redirect_uri={}&code={}",
-            self.client_id, self.client_secret, self.redirect_url, auth_code
-        ))
-            .send().await?.error_for_status()?
+        let token_res = self
+            .http_client
+            .get(format!(
+                "{}?client_id={}&client_secret={}&redirect_uri={}&code={}",
+                self.token_url(),
+                self.client_id,
+                self.client_secret,
+                self.redirect_url,
+                auth_code
+            ))
+            .send()
+            .await?
+            .error_for_status()?
             .json::<Value>()
             .await?;
 
@@ -101,5 +109,47 @@ impl Provider for VkProvider {
             refresh_token: None,
             expires_in: None,
         })
+    }
+
+    fn token_url(&self) -> String {
+        "https://oauth.vk.com/access_token".to_string()
+    }
+
+    async fn refresh_token(&self, refresh_token: &str) -> Result<SocialiteUser, SocialiteError> {
+        let token_res = self
+            .http_client
+            .post(self.token_url())
+            .form(&[
+                ("client_id", self.client_id.as_str()),
+                ("client_secret", self.client_secret.as_str()),
+                ("refresh_token", refresh_token),
+                ("grant_type", "refresh_token"),
+            ])
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<Value>()
+            .await?;
+
+        if let Some(err) = token_res["error"].as_str() {
+            let err_desc = token_res["error_description"].as_str().unwrap_or("");
+            return Err(SocialiteError::Token(format!(
+                "Provider returned error: {} - {}",
+                err, err_desc
+            )));
+        }
+
+        let access_token = token_res["access_token"].as_str().ok_or_else(|| {
+            SocialiteError::Token("Failed to get access_token during refresh".to_string())
+        })?;
+
+        let mut user = self.get_user_from_token(access_token).await?;
+        user.refresh_token = token_res["refresh_token"]
+            .as_str()
+            .map(|s: &str| s.to_string());
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
     }
 }

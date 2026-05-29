@@ -23,4 +23,7 @@ pub enum SocialiteError {
 
     #[error("Provider specific error: {0}")]
     Provider(String),
+
+    #[error("Invalid CSRF state: {0}")]
+    InvalidState(String),
 }

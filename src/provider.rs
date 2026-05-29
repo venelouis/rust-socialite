@@ -11,11 +11,7 @@ pub trait Provider: Send + Sync {
     /// It is highly recommended to use this to prevent CSRF attacks.
     fn redirect_url_with_state(&self, state: &str) -> String {
         let url = self.redirect_url();
-        let separator = if url.contains('?') {
-            "&"
-        } else {
-            "?"
-        };
+        let separator = if url.contains('?') { "&" } else { "?" };
         format!("{url}{separator}state={state}")
     }
 
@@ -23,33 +19,20 @@ pub trait Provider: Send + Sync {
     /// Useful for providers that enforce PKCE (like Twitter/X v2).
     fn redirect_url_with_pkce(&self, code_challenge: &str) -> String {
         let url = self.redirect_url();
-        let separator = if url.contains('?') {
-            "&"
-        } else {
-            "?"
-        };
+        let separator = if url.contains('?') { "&" } else { "?" };
         format!(
             "{}{}code_challenge={}&code_challenge_method=S256",
-            url,
-            separator,
-            code_challenge
+            url, separator, code_challenge
         )
     }
 
     /// Returns the authorization URL with a PKCE `code_challenge` and a `state` parameter appended.
     fn redirect_url_with_pkce_and_state(&self, code_challenge: &str, state: &str) -> String {
         let url = self.redirect_url();
-        let separator = if url.contains('?') {
-            "&"
-        } else {
-            "?"
-        };
+        let separator = if url.contains('?') { "&" } else { "?" };
         format!(
             "{}{}code_challenge={}&code_challenge_method=S256&state={}",
-            url,
-            separator,
-            code_challenge,
-            state
+            url, separator, code_challenge, state
         )
     }
 
@@ -77,6 +60,19 @@ pub trait Provider: Send + Sync {
         access_token: &str,
     ) -> Result<SocialiteUser, crate::error::SocialiteError>;
 
+    /// Returns the URL used to exchange the authorization code for an access token.
+    fn token_url(&self) -> String;
+
+    /// Exchanges a refresh token for a new access token and fetches the user profile.
+    async fn refresh_token(
+        &self,
+        _refresh_token: &str,
+    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+        Err(crate::error::SocialiteError::Token(
+            "Refresh token is not supported by this provider".to_string(),
+        ))
+    }
+
     /// Revokes an access token (or refresh token) directly on the provider's authorization server.
     /// By default, this returns a `Token` error since not all providers support token revocation.
     async fn revoke_token(&self, _token: &str) -> Result<(), crate::error::SocialiteError> {
@@ -103,10 +99,11 @@ mod tests {
             self.base_url.clone()
         }
 
-        async fn get_user(
-            &self,
-            _auth_code: &str,
-        ) -> Result<SocialiteUser, SocialiteError> {
+        fn token_url(&self) -> String {
+            "".to_string()
+        }
+
+        async fn get_user(&self, _auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
             unimplemented!()
         }
 

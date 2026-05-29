@@ -24,6 +24,21 @@ pub struct AuthCallback {
     pub error_description: Option<String>,
 }
 
+impl AuthCallback {
+    /// Helper to verify the CSRF state parameter.
+    pub fn verify_state(&self, session_state: &str) -> Result<(), crate::error::SocialiteError> {
+        match &self.state {
+            Some(state) if state == session_state => Ok(()),
+            Some(_) => Err(crate::error::SocialiteError::InvalidState(
+                "CSRF state mismatch".into(),
+            )),
+            None => Err(crate::error::SocialiteError::InvalidState(
+                "State missing in callback".into(),
+            )),
+        }
+    }
+}
+
 #[cfg(feature = "axum")]
 impl<S> axum::extract::FromRequestParts<S> for AuthCallback
 where
@@ -80,7 +95,10 @@ mod tests {
         assert_eq!(callback.code, None);
         assert_eq!(callback.state.as_deref(), Some("state_xyz"));
         assert_eq!(callback.error.as_deref(), Some("access_denied"));
-        assert_eq!(callback.error_description.as_deref(), Some("User denied access"));
+        assert_eq!(
+            callback.error_description.as_deref(),
+            Some("User denied access")
+        );
     }
 
     #[test]
