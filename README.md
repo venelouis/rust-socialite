@@ -1,8 +1,11 @@
 # Rust Socialite 🦀
 
 [![Crates.io](https://img.shields.io/crates/v/rust-socialite.svg)](https://crates.io/crates/rust-socialite)
+[![Downloads](https://img.shields.io/crates/d/rust-socialite.svg)](https://crates.io/crates/rust-socialite)
 [![Documentation](https://docs.rs/rust-socialite/badge.svg)](https://docs.rs/rust-socialite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://blog.rust-lang.org/2023/12/28/Rust-1.75.0.html)
+[![CI/CD](https://github.com/venelouis/rust-socialite/actions/workflows/publish.yml/badge.svg)](https://github.com/venelouis/rust-socialite/actions)
 
 **Rust Socialite** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
 
