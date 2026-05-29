@@ -10,24 +10,17 @@ crate::define_provider!(StripeProvider, "read_write");
 #[async_trait]
 impl Provider for StripeProvider {
     fn redirect_url(&self) -> String {
-        let mut query = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        query.append_pair("response_type", "code");
-        query.append_pair("client_id", &self.client_id);
-        query.append_pair("redirect_uri", &self.redirect_url);
-        if !self.scopes.is_empty() {
-            query.append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            query.append_pair("state", state);
-        }
-
-        if let Some(pkce) = &self.pkce_challenge {
-            query.append_pair("code_challenge", pkce);
-            query.append_pair("code_challenge_method", "S256");
-        }
+        let mut params = crate::provider::build_oauth_params(
+            &self.client_id,
+            &self.redirect_url,
+            &self.scopes,
+            self.state.as_deref(),
+            self.pkce_challenge.as_deref(),
+        );
+        params.append_pair("response_type", "code");
         format!(
             "https://connect.stripe.com/oauth/authorize?{}",
-            query.finish()
+            params.finish()
         )
     }
 

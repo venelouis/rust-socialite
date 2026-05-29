@@ -16,7 +16,7 @@ use serde::Deserialize;
 ///     // Handle token exchange...
 /// }
 /// ```
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 pub struct AuthCallback {
     pub code: Option<String>,
     pub state: Option<String>,

@@ -1,0 +1,122 @@
+use rust_socialite::client::{HttpClient, HttpRequest, HttpResponse};
+use rust_socialite::provider::Provider;
+use rust_socialite::providers::GithubProvider;
+use async_trait::async_trait;
+use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
+
+/// Intercepts all requests and rewrites the host to point to the wiremock local server
+struct WiremockInterceptClient {
+    mock_server_url: String,
+    inner: rust_socialite::client::ReqwestClient,
+}
+
+impl WiremockInterceptClient {
+    fn new(mock_server_url: String) -> Self {
+        Self {
+            mock_server_url,
+            inner: rust_socialite::client::ReqwestClient::new(),
+        }
+    }
+}
+
+#[async_trait]
+impl HttpClient for WiremockInterceptClient {
+    async fn execute(
+        &self,
+        mut req: HttpRequest,
+    ) -> Result<HttpResponse, rust_socialite::error::SocialiteError> {
+        let parsed = url::Url::parse(&req.url).unwrap();
+        // Redirect the request to our mock server instead of github.com or api.github.com
+        req.url = format!("{}{}", self.mock_server_url, parsed.path());
+        self.inner.execute(req).await
+    }
+}
+
+#[tokio::test]
+async fn test_github_get_user_success() {
+    let mock_server = MockServer::start().await;
+
+    // 1. Mock the token exchange endpoint
+    Mock::given(method("POST"))
+        .and(path("/login/oauth/access_token"))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "access_token": "mock_access_token_123",
+                "token_type": "bearer",
+                "scope": "repo,gist",
+                "refresh_token": "mock_refresh_token_abc",
+                "expires_in": 3600
+            })),
+        )
+        .mount(&mock_server)
+        .await;
+
+    // 2. Mock the user profile endpoint
+    Mock::given(method("GET"))
+        .and(path("/user"))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_json(serde_json::json!({
+                "id": 123456,
+                "login": "octocat",
+                "name": "The Octocat",
+                "email": "octocat@github.com",
+                "avatar_url": "https://github.com/images/error/octocat_happy.gif",
+            })),
+        )
+        .mount(&mock_server)
+        .await;
+
+    // 3. Create Provider with our intercepted Mock Client
+    let intercept_client = std::sync::Arc::new(WiremockInterceptClient::new(mock_server.uri()));
+    let provider = GithubProvider::new(
+        "test_client_id".to_string(),
+        "test_client_secret".to_string(),
+        "http://localhost/callback".to_string(),
+    )
+    .with_http_client(intercept_client);
+
+    // 4. Perform the full get_user flow!
+    let user = provider.get_user("fake_auth_code_999").await.unwrap();
+
+    assert_eq!(user.id, "123456");
+    assert_eq!(user.name, "The Octocat");
+    assert_eq!(user.email.as_deref(), Some("octocat@github.com"));
+    assert_eq!(
+        user.avatar_url.as_deref(),
+        Some("https://github.com/images/error/octocat_happy.gif")
+    );
+    assert_eq!(user.access_token, "mock_access_token_123");
+    assert_eq!(user.refresh_token.as_deref(), Some("mock_refresh_token_abc"));
+    assert_eq!(user.expires_in, Some(3600));
+}
+
+#[tokio::test]
+async fn test_github_token_error() {
+    let mock_server = MockServer::start().await;
+
+    // Mock an error response from the provider during token exchange
+    Mock::given(method("POST"))
+        .and(path("/login/oauth/access_token"))
+        .respond_with(
+            ResponseTemplate::new(400).set_body_json(serde_json::json!({
+                "error": "invalid_grant",
+                "error_description": "The code passed is incorrect or expired."
+            })),
+        )
+        .mount(&mock_server)
+        .await;
+
+    let intercept_client = std::sync::Arc::new(WiremockInterceptClient::new(mock_server.uri()));
+    let provider = GithubProvider::new(
+        "test_client_id".to_string(),
+        "test_client_secret".to_string(),
+        "http://localhost/callback".to_string(),
+    )
+    .with_http_client(intercept_client);
+
+    let err = provider.get_user("bad_code").await.unwrap_err();
+    
+    // Using string matching since SocialiteError implements Display but maybe not PartialEq
+    assert!(err.to_string().contains("HTTP Error: 400"));
+}

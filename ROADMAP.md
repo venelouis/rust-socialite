@@ -15,13 +15,13 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 
 ## 🔮 Not So Distant Future
 
-- **HTTP Client Agnostic:** Generic client support (via `HttpClient` trait) allowing the use of `surf`, `reqwest-middleware`, or others instead of forcing `reqwest`.
+- [x] **HTTP Client Agnostic:** Generic client support (via `HttpClient` trait) allowing the use of `surf`, `reqwest-middleware`, or others instead of forcing `reqwest`. (Done in v5.2.0)
 - **Database Integration (rust-eloquent, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rust-eloquent` to keep the Laravel ecosystem vibe in Rust!
-- **HTTP Proxy Support:** Allow the configuration of corporate proxies for locked-down environments.
+- [x] **HTTP Proxy Support:** Allow the configuration of corporate proxies for locked-down environments. (Done in v5.2.0)
 - [x] **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires. (Done in v5.1.0)
 - **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
-- **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks.
-- **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures.
+- [x] **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks (Leptos added in v5.2.0).
+- [x] **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures. (Done in v5.2.0)
 - **Rate Limiting & Advanced Retry Policies:** Offer integrated wrappers (e.g., via `reqwest-middleware` and `reqwest-retry`) to perform native exponential backoff when providers reject requests due to rate limits (HTTP 429).
 - **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `SocialiteError` to drastically improve debugging experience.
 

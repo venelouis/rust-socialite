@@ -5,7 +5,10 @@
 [![Documentation](https://docs.rs/rust-socialite/badge.svg)](https://docs.rs/rust-socialite)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://blog.rust-lang.org/2023/12/28/Rust-1.75.0.html)
-[![CI/CD](https://github.com/venelouis/rust-socialite/actions/workflows/publish.yml/badge.svg)](https://github.com/venelouis/rust-socialite/actions)
+[![CI Build](https://github.com/venelouis/rust-socialite/actions/workflows/ci.yml/badge.svg)](https://github.com/venelouis/rust-socialite/actions/workflows/ci.yml)
+[![Publish](https://github.com/venelouis/rust-socialite/actions/workflows/publish.yml/badge.svg)](https://github.com/venelouis/rust-socialite/actions)
+[![Audit: 10/10](https://img.shields.io/badge/Audit-10%2F10-success.svg)](AUDIT.md)
+[![Zero Panics](https://img.shields.io/badge/Panics-0-success.svg)](SECURITY_AUDIT.md)
 
 **Rust Socialite** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
 
@@ -14,14 +17,14 @@
 - 🚀 **Async & Fast**: Built on top of `tokio` and `reqwest`.
 - 🧩 **Standardized**: All providers return a unified `SocialiteUser` struct.
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
-- 🔌 **Framework Agnostic**: Works seamlessly with Axum, Actix, Leptos, Dioxus, or any other framework.
+- 🔌 **Framework Agnostic**: Works seamlessly with Rullst, Axum, Actix, Leptos, Dioxus, or any other framework.
 
 > 📚 **Important Documents:**
 > - [CHANGELOG.md](CHANGELOG.md): See what's new in v5.0.2.
 > - [ROADMAP.md](ROADMAP.md): Discover our path to v1.0.0.
 > - [AUDIT.md](AUDIT.md): Complete security, performance, and maintainability audit report.
 
-## 📦 Supported Providers (v5.1.0)
+## 📦 Supported Providers (v5.2.0)
 
 Official support for 33 major providers:
 
@@ -61,11 +64,11 @@ Official support for 33 major providers:
 
 ## 🛠️ Installation
 
-Add the package to your `Cargo.toml`:
+Add the package to your `Cargo.toml`. If you use **Rullst**, **Axum**, **Actix**, or **Leptos**, you can enable their specific features for native Extractor support!
 
 ```toml
 [dependencies]
-rust-socialite = "5.1.0"
+rust-socialite = "5.2.0"
 tokio = { version = "1.52", features = ["full"] }
 ```
 

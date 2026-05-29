@@ -9,24 +9,13 @@ crate::define_provider!(SlackProvider);
 #[async_trait]
 impl Provider for SlackProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params.append_pair("client_id", &self.client_id);
-        params.append_pair("redirect_uri", &self.redirect_url);
-        params.append_pair(
-            "user_scope",
-            "identity.basic,identity.email,identity.avatar",
+        let mut params = crate::provider::build_oauth_params(
+            &self.client_id,
+            &self.redirect_url,
+            &self.scopes,
+            self.state.as_deref(),
+            self.pkce_challenge.as_deref(),
         );
-        if !self.scopes.is_empty() {
-            params.append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            params.append_pair("state", state);
-        }
-
-        if let Some(pkce) = &self.pkce_challenge {
-            params.append_pair("code_challenge", pkce);
-            params.append_pair("code_challenge_method", "S256");
-        }
         format!("https://slack.com/oauth/v2/authorize?{}", params.finish())
     }
 

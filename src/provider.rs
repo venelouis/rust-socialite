@@ -1,6 +1,30 @@
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 
+/// Helper to construct standard OAuth2 parameters to reduce boilerplate.
+pub fn build_oauth_params<'a>(
+    client_id: &'a str,
+    redirect_uri: &'a str,
+    scopes: &'a [String],
+    state: Option<&'a str>,
+    pkce_challenge: Option<&'a str>,
+) -> url::form_urlencoded::Serializer<'a, String> {
+    let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
+    params.append_pair("client_id", client_id);
+    params.append_pair("redirect_uri", redirect_uri);
+    if !scopes.is_empty() {
+        params.append_pair("scope", &scopes.join(" "));
+    }
+    if let Some(s) = state {
+        params.append_pair("state", s);
+    }
+    if let Some(p) = pkce_challenge {
+        params.append_pair("code_challenge", p);
+        params.append_pair("code_challenge_method", "S256");
+    }
+    params
+}
+
 /// The core trait implemented by all OAuth2 providers in Rust Socialite.
 #[async_trait]
 pub trait Provider: Send + Sync {

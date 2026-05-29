@@ -20,6 +20,10 @@ macro_rules! define_provider {
 
         impl $name {
             pub fn new(client_id: String, client_secret: String, redirect_url: String) -> Self {
+                debug_assert!(!client_id.is_empty(), "Socialite Error: client_id cannot be empty");
+                debug_assert!(!client_secret.is_empty(), "Socialite Error: client_secret cannot be empty");
+                debug_assert!(redirect_url.starts_with("http"), "Socialite Error: redirect_url must be a valid HTTP/HTTPS URL");
+                
                 static CLIENT: ::std::sync::LazyLock<::std::sync::Arc<dyn $crate::client::HttpClient>> =
                     ::std::sync::LazyLock::new(|| ::std::sync::Arc::new($crate::client::ReqwestClient::new()));
                 Self {
@@ -70,12 +74,12 @@ mod tests {
         let provider = DummyProvider::new(
             "client_id".to_string(),
             "client_secret".to_string(),
-            "redirect_url".to_string(),
+            "http://redirect_url".to_string(),
         );
 
         assert_eq!(provider.client_id, "client_id");
         assert_eq!(provider.client_secret, "client_secret");
-        assert_eq!(provider.redirect_url, "redirect_url");
+        assert_eq!(provider.redirect_url, "http://redirect_url");
         assert_eq!(
             provider.scopes,
             vec!["default_scope1".to_string(), "default_scope2".to_string()]
@@ -89,7 +93,7 @@ mod tests {
         let provider = DummyProvider::new(
             "client_id".to_string(),
             "client_secret".to_string(),
-            "redirect_url".to_string(),
+            "http://redirect_url".to_string(),
         )
         .with_scopes(&["new_scope1", "new_scope2"]);
 
@@ -104,7 +108,7 @@ mod tests {
         let provider = DummyProvider::new(
             "client_id".to_string(),
             "client_secret".to_string(),
-            "redirect_url".to_string(),
+            "http://redirect_url".to_string(),
         )
         .with_state("my_state");
 
@@ -116,7 +120,7 @@ mod tests {
         let provider = DummyProvider::new(
             "client_id".to_string(),
             "client_secret".to_string(),
-            "redirect_url".to_string(),
+            "http://redirect_url".to_string(),
         )
         .with_pkce("my_pkce_challenge");
 

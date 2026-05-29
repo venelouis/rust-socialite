@@ -93,22 +93,15 @@ impl AppleProvider {
 #[async_trait]
 impl Provider for AppleProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params.append_pair("client_id", &self.client_id);
-        params.append_pair("redirect_uri", &self.redirect_url);
+        let mut params = crate::provider::build_oauth_params(
+            &self.client_id,
+            &self.redirect_url,
+            &self.scopes,
+            self.state.as_deref(),
+            self.pkce_challenge.as_deref(),
+        );
         params.append_pair("response_type", "code");
         params.append_pair("response_mode", "form_post");
-        if !self.scopes.is_empty() {
-            params.append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            params.append_pair("state", state);
-        }
-
-        if let Some(pkce) = &self.pkce_challenge {
-            params.append_pair("code_challenge", pkce);
-            params.append_pair("code_challenge_method", "S256");
-        }
         format!(
             "https://appleid.apple.com/auth/authorize?{}",
             params.finish()

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.0] - 2026-05-29
+
+### Added
+- **Leptos Support**: Integrated Leptos support! By enabling the `leptos` feature, the `AuthCallback` extractor now seamlessly implements `leptos_router::Params`.
+- **HTTP Client Agnostic**: The provider traits and builder methods now allow passing a custom `HttpClient` through `.with_http_client(...)`.
+- **HTTP Proxy Support**: With the agnostic HTTP client interface, users can now provide a proxy-configured client to navigate locked-down environments easily.
+
+### Refactored
+- **URL Generation Boilerplate**: Cleaned up the codebase by removing massive code duplication across all 35 providers for URL generation (`client_id`, `redirect_uri`, `scope`, `state`, `pkce` logic is now unified).
+
 ## [5.1.0] - 2026-05-28
 
 ### Added

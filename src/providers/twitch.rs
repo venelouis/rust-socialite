@@ -9,21 +9,14 @@ crate::define_provider!(TwitchProvider, "user:read:email");
 #[async_trait]
 impl Provider for TwitchProvider {
     fn redirect_url(&self) -> String {
-        let mut params = url::form_urlencoded::Serializer::new(String::with_capacity(256));
-        params.append_pair("client_id", &self.client_id);
-        params.append_pair("redirect_uri", &self.redirect_url);
+        let mut params = crate::provider::build_oauth_params(
+            &self.client_id,
+            &self.redirect_url,
+            &self.scopes,
+            self.state.as_deref(),
+            self.pkce_challenge.as_deref(),
+        );
         params.append_pair("response_type", "code");
-        if !self.scopes.is_empty() {
-            params.append_pair("scope", &self.scopes.join(" "));
-        }
-        if let Some(state) = &self.state {
-            params.append_pair("state", state);
-        }
-
-        if let Some(pkce) = &self.pkce_challenge {
-            params.append_pair("code_challenge", pkce);
-            params.append_pair("code_challenge_method", "S256");
-        }
         format!("https://id.twitch.tv/oauth2/authorize?{}", params.finish())
     }
 
@@ -76,12 +69,11 @@ impl Provider for TwitchProvider {
             .json::<Value>()
             .await?;
 
-        let user_data = user_res["data"]
-            .as_array()
-            .and_then(|arr| arr.first())
-            .ok_or_else(|| {
-                crate::error::SocialiteError::Provider("No user data returned".to_string())
-            })?;
+        if !user_res["data"].is_array() || user_res["data"].as_array().unwrap().is_empty() {
+            return Err(crate::error::SocialiteError::Provider("No user data returned".to_string()));
+        }
+
+        let user_data = &user_res["data"][0];
 
         Ok(SocialiteUser {
             id: user_data["id"].as_str().unwrap_or("").to_string(),
@@ -90,7 +82,7 @@ impl Provider for TwitchProvider {
             avatar_url: user_data["profile_image_url"]
                 .as_str()
                 .map(|s: &str| s.to_string()),
-            raw_data: user_data.clone(),
+            raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,
             expires_in: None,
