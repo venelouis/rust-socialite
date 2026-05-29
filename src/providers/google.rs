@@ -3,7 +3,6 @@ use crate::provider::Provider;
 use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use serde_json::Value;
-use url::form_urlencoded;
 
 crate::define_provider!(GoogleProvider, "openid", "profile", "email");
 

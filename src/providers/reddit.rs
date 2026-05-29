@@ -5,7 +5,6 @@ use crate::user::SocialiteUser;
 use async_trait::async_trait;
 use base64::{Engine as _, engine::general_purpose};
 use serde_json::Value;
-use url::form_urlencoded;
 
 crate::define_provider!(RedditProvider, "identity");
 
