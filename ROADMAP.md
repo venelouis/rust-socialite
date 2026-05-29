@@ -24,6 +24,10 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 - **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures.
 - **Rate Limiting & Advanced Retry Policies:** Offer integrated wrappers (e.g., via `reqwest-middleware` and `reqwest-retry`) to perform native exponential backoff when providers reject requests due to rate limits (HTTP 429).
 - **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `SocialiteError` to drastically improve debugging experience.
+- **OpenTelemetry / Tracing Integration:** Add built-in `tracing` instrumentation to track latency, token exchange times, and trace external API failures out-of-the-box.
+- **Dynamic / Multi-Tenant Configuration:** Support dynamically instantiating providers at runtime for B2B SaaS platforms where tenants bring their own OAuth credentials.
+- **WebAssembly & Edge Support:** Ensure the core library compiles to `wasm32-unknown-unknown` so it can run on Cloudflare Workers, Vercel Edge, or Fastly Compute.
+- **Event Hooks / Middleware Lifecycle:** Provide a way to attach closures before/after token exchanges and user fetches to map custom fields or log specific events.
 
 ---
 
