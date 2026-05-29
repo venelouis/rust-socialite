@@ -4,7 +4,7 @@ import sys
 
 def bump_version(new_version):
     files_to_update = [
-        ("Cargo.toml", r'version = ".*?"', f'version = "{new_version}"'),
+        ("Cargo.toml", r'^version = ".*?"', f'version = "{new_version}"'),
         ("README.md", r'Supported Providers \(v.*?\)', f'Supported Providers (v{new_version})'),
         ("README_pt.md", r'Provedores Suportados \(v.*?\)', f'Provedores Suportados (v{new_version})'),
     ]
@@ -17,7 +17,7 @@ def bump_version(new_version):
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        new_content, num_subs = re.subn(pattern, replacement, content)
+        new_content, num_subs = re.subn(pattern, replacement, content, flags=re.MULTILINE)
 
         if num_subs > 0:
             with open(filename, 'w', encoding='utf-8') as f:
