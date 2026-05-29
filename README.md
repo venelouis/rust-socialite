@@ -62,7 +62,7 @@ Add the package to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-socialite = "5.0.2"
+rust-socialite = "5.1.0"
 tokio = { version = "1.52", features = ["full"] }
 ```
 
@@ -116,6 +116,17 @@ let url = github.with_state(state).redirect_url();
 // return Redirect::temporary(&url);
 
 // 3. In the callback route, verify if the query param `state` matches your session!
+// If you are using the optional `axum` or `actix` features, you can use `verify_state`:
+// params.verify_state(&state_from_session)?;
+```
+
+### 🔄 Refreshing Tokens
+
+If an access token expires, you can seamlessly renew it without asking the user to login again by using their `refresh_token`:
+
+```rust
+let refreshed_user = github.refresh_token("existing_refresh_token_string").await?;
+println!("New Access Token: {}", refreshed_user.access_token);
 ```
 
 ### 🔒 PKCE Support (e.g. X / Twitter)
