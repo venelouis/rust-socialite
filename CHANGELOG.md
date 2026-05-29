@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.3] - 2026-05-29
+
+### Fixed
+- **Formatting**: Fixed trailing blank lines left over by `cargo fix` to appease the strict `-D warnings` on `cargo fmt`.
+
 ## [5.2.2] - 2026-05-29
 
 ### Fixed
