@@ -18,7 +18,7 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 - **HTTP Client Agnostic:** Generic client support (via `HttpClient` trait) allowing the use of `surf`, `reqwest-middleware`, or others instead of forcing `reqwest`.
 - **Database Integration (rust-eloquent, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rust-eloquent` to keep the Laravel ecosystem vibe in Rust!
 - **HTTP Proxy Support:** Allow the configuration of corporate proxies for locked-down environments.
-- **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires (automatically handling `/token` endpoints in the background).
+- [x] **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires. (Done in v5.1.0)
 - **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
 - **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks.
 - **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures.

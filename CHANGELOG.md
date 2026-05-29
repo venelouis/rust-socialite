@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-05-28
+
+### Added
+- **Automatic CSRF Validation**: The `AuthCallback` extractor now includes a `verify_state(&self, session_state: &str)` method to automatically secure OAuth flows against CSRF attacks.
+- **Refresh Token Support**: Added `token_url()` and `refresh_token(token: &str)` methods to the `Provider` trait and implemented them across all 35 providers, allowing developers to automatically renew expired tokens natively.
+
+### Fixed
+- **Testing Dependencies**: Added `serde_urlencoded` to `dev-dependencies` to fix a major compilation bug running the test suite on `main`.
+
+### Security
+- Maintained zero `unsafe` footprint while ensuring standard parameter passing for URL token generation and token revocation across providers.
+
 ## [5.0.2] - 2026-05-27
 
 ### Performance

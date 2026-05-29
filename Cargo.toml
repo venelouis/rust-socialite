@@ -1,6 +1,6 @@
 [package]
 name = "rust-socialite"
-version = "5.0.2"
+version = "5.1.0"
 edition = "2024"
 description = "OAuth2 Social Login for Rust web frameworks, inspired by Laravel Socialite."
 license = "MIT"
@@ -18,16 +18,16 @@ async-trait = "0.1.89"
 base64 = "0.22.1"
 jsonwebtoken = "10.4.0"
 rand = "0.8"
-reqwest = { version = "0.13.3", features = ["form", "json", "rustls"] }
-serde = { version = "1.0.228", features = ["derive"] }
+reqwest = { version = "5.1.0", features = ["form", "json", "rustls"] }
+serde = { version = "5.1.0", features = ["derive"] }
 serde_json = "1.0.150"
 sha2 = "0.11.0"
 thiserror = "2.0.18"
-tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "5.1.0", features = ["macros", "rt-multi-thread"] }
 url = "2.5.8"
 
-axum = { version = "0.8.9", optional = true }
-actix-web = { version = "4.9.0", optional = true }
+axum = { version = "5.1.0", optional = true }
+actix-web = { version = "5.1.0", optional = true }
 
 [dev-dependencies]
 axum = "0.8.9"
