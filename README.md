@@ -74,7 +74,7 @@ cargo add rust-socialite
 Or manually add it to your `Cargo.toml`:
 ```toml
 [dependencies]
-rust-socialite = "5.2.2"
+rust-socialite = "5.2.3"
 tokio = { version = "1.52", features = ["full"] }
 ```
 
