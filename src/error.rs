@@ -21,6 +21,12 @@ pub enum ConnectError {
     #[error("Missing token or unexpected response: {0}")]
     Token(String),
 
+    #[error("Provider API Error ({code}): {message}")]
+    ProviderApiError {
+        code: String,
+        message: String,
+    },
+
     #[error("Provider specific error: {0}")]
     Provider(String),
 

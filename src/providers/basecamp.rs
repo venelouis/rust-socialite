@@ -80,6 +80,7 @@ impl Provider for BasecampProvider {
                 .as_str()
                 .map(|s: &str| s.to_string()),
             avatar_url: None, // Basecamp API doesn't standardly expose an avatar via launchpad
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

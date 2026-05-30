@@ -79,6 +79,7 @@ impl Provider for SpotifyProvider {
             name: user_res["display_name"].as_str().unwrap_or("").to_string(),
             email: user_res["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url,
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

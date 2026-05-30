@@ -109,10 +109,26 @@ pub struct ResponseWrapper {
 impl ResponseWrapper {
     pub fn error_for_status(self) -> Result<Self, crate::error::ConnectError> {
         if self.res.status >= 400 {
-            Err(crate::error::ConnectError::Provider(format!(
-                "HTTP Error: {}",
-                self.res.status
-            )))
+            tracing::error!("HTTP status {} received", self.res.status);
+            let mut code = format!("HTTP_{}", self.res.status);
+            let mut message = "Unknown error".to_string();
+
+            if let Some(obj) = self.res.body.as_object() {
+                if let Some(err) = obj.get("error").and_then(|v| v.as_str()) {
+                    code = err.to_string();
+                }
+                if let Some(desc) = obj.get("error_description").and_then(|v| v.as_str()) {
+                    message = desc.to_string();
+                } else if let Some(msg) = obj.get("message").and_then(|v| v.as_str()) {
+                    message = msg.to_string();
+                } else {
+                    message = self.res.body.to_string();
+                }
+            } else if let Some(s) = self.res.body.as_str() {
+                message = s.to_string();
+            }
+
+            Err(crate::error::ConnectError::ProviderApiError { code, message })
         } else {
             Ok(self)
         }
@@ -188,7 +204,9 @@ impl Default for ReqwestClient {
 
 #[async_trait]
 impl HttpClient for ReqwestClient {
+    #[tracing::instrument(skip(self, req), fields(method = %req.method, url = %req.url))]
     async fn execute(&self, req: HttpRequest) -> Result<HttpResponse, crate::error::ConnectError> {
+        tracing::debug!("Executing HTTP request");
         let method = match req.method.as_str() {
             "GET" => reqwest::Method::GET,
             "POST" => reqwest::Method::POST,
@@ -263,6 +281,7 @@ impl HttpClient for ReqwestClient {
             })?
         };
         let status = res.status().as_u16();
+        tracing::debug!(status = %status, "Received HTTP response");
         // Read body as text first in case it's not JSON
         let text = res
             .text()

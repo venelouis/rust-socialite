@@ -73,6 +73,7 @@ impl Provider for DigitaloceanProvider {
             name: String::with_capacity(256), // DigitalOcean does not provide a display name via API
             email: account["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: None, // No avatar provided
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

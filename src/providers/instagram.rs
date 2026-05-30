@@ -73,6 +73,7 @@ impl Provider for InstagramProvider {
             name: user_res["username"].as_str().unwrap_or("").to_string(),
             email: None,
             avatar_url: None, // Instagram Basic Display does not provide profile picture
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

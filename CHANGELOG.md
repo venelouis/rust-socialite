@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2026-05-30
+
+### Added
+- **OIDC Fast-Path Provider (`OidcProvider`):** Added a generic provider that automatically downloads the OpenID configuration via `.well-known/openid-configuration` and sets up endpoints instantly.
+- **Enterprise-Grade Observability:** Native integration with `tracing` crate. Highly detailed spans during token exchanges and profile fetching.
+- **Strict Profile Normalization:** Enforced strict typing for `UniversalProfile` (`ConnectUser`), ensuring fields like `email_verified` exist consistently across all 35+ providers.
+- **Automated CSRF Protection (`AuthSession`):** Added an Axum Session extractor (behind `axum-session` feature flag) with `tower-sessions` to automatically generate, store, and validate OAuth `state` securely.
+- **Native Apple Secret Generation:** `AppleProvider` now dynamically generates the JWT `client_secret` on the fly using a `.p8` Private Key, eliminating tedious script generation for developers.
+- **Local Mock IdP:** Added a built-in mock identity provider router (behind `mock-idp` feature flag) powered by Axum, enabling full E2E testing without internet access or rate limits.
+- **Device Authorization Flow (RFC 8628):** Support for headless CLI tools and Smart TVs with new `request_device_code()` and `poll_device_token()` methods, fully implemented for GitHub.
+- **Cryptographic OIDC Signature Validation:** `OidcProvider` now automatically fetches the provider's JWKS Public Keys and cryptographically verifies the RSA signature of the `id_token` for maximum enterprise security.
+- **Unified Provider Errors**: Replaced panic/opaque errors with `ProviderApiError`. HTTP 400s now gracefully parse OAuth 2.0 standard JSON errors (`error`, `error_description`).
+- **ORM Integration**: Added the `IntoDatabaseUser` helper trait to easily transform the universal profile into your database models.
+
+### Changed
+- **Avatar Standardization**: Improved avatar resolution for Discord (upscaled to 1024px), Google (upscaled to 400px), and X/Twitter (stripped `_normal` suffix for original quality).
+
 ## [5.2.3] - 2026-05-29
 
 ### Fixed

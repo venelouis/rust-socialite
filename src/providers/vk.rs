@@ -88,6 +88,7 @@ impl Provider for VkProvider {
             name,
             email: None, // Email is generally not available in users.get unless specified and granted
             avatar_url: user_data["photo_200"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

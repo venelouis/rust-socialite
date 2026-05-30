@@ -76,6 +76,7 @@ impl Provider for MicrosoftProvider {
                 .or_else(|| user_res["userPrincipalName"].as_str())
                 .map(|s: &str| s.to_string()),
             avatar_url: None, // Requires a separate request to /me/photo/$value
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

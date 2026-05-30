@@ -87,6 +87,7 @@ impl Provider for GithubProvider {
                 .to_string(),
             email: user_res["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: user_res["avatar_url"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,
@@ -129,6 +130,70 @@ impl Provider for GithubProvider {
             crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
+        })?;
+
+        let mut user = self.get_user_from_token(access_token).await?;
+        user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        Ok(user)
+    }
+
+    async fn request_device_code(&self) -> Result<crate::user::DeviceAuthorizationResponse, crate::error::ConnectError> {
+        let mut form = vec![("client_id", self.client_id.as_str())];
+        let scopes = self.scopes.join(" ");
+        if !scopes.is_empty() {
+            form.push(("scope", scopes.as_str()));
+        }
+
+        let res = self
+            .http_client
+            .post("https://github.com/login/device/code")
+            .header("Accept", "application/json")
+            .form(&form)
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<Value>()
+            .await?;
+
+        Ok(crate::user::DeviceAuthorizationResponse {
+            device_code: res["device_code"].as_str().unwrap_or("").to_string(),
+            user_code: res["user_code"].as_str().unwrap_or("").to_string(),
+            verification_uri: res["verification_uri"].as_str().unwrap_or("").to_string(),
+            verification_uri_complete: res["verification_uri_complete"].as_str().map(|s| s.to_string()),
+            expires_in: res["expires_in"].as_u64().unwrap_or(900),
+            interval: res["interval"].as_u64(),
+        })
+    }
+
+    async fn poll_device_token(&self, device_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
+        let token_res = self
+            .http_client
+            .post(self.token_url())
+            .header("Accept", "application/json")
+            .form(&[
+                ("client_id", self.client_id.as_str()),
+                ("device_code", device_code),
+                ("grant_type", "urn:ietf:params:oauth:grant-type:device_code"),
+            ])
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<Value>()
+            .await?;
+
+        if let Some(err) = token_res["error"].as_str() {
+            let err_desc = token_res["error_description"].as_str().unwrap_or("");
+            return Err(crate::error::ConnectError::Token(format!(
+                "Provider returned error: {} - {}",
+                err, err_desc
+            )));
+        }
+
+        let access_token = token_res["access_token"].as_str().ok_or_else(|| {
+            crate::error::ConnectError::Token("Failed to get access_token during device poll. (Authorization pending?)".to_string())
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;

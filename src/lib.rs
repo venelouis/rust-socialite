@@ -7,14 +7,15 @@ pub mod error;
     feature = "rullst"
 ))]
 pub mod extractors;
+#[macro_use]
+pub mod macros;
+pub mod mock_idp;
 pub mod pkce;
 pub mod prelude;
 pub mod provider;
 pub mod providers;
 pub mod user;
 
-#[macro_use]
-pub mod macros;
 
 pub use error::ConnectError;
 

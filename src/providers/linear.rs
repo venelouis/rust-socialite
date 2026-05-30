@@ -73,6 +73,7 @@ impl Provider for LinearProvider {
             name: viewer["name"].as_str().unwrap_or("").to_string(),
             email: viewer["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: viewer["avatarUrl"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

@@ -71,6 +71,7 @@ impl Provider for LineProvider {
             name: user_res["displayName"].as_str().unwrap_or("").to_string(),
             email: None, // Line email requires parsing the 'id_token' JWT payload. We omit it here for simplicity.
             avatar_url: user_res["pictureUrl"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

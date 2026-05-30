@@ -13,6 +13,9 @@ pub struct ConnectUser {
     /// The email address of the user, if available and granted.
     pub email: Option<String>,
 
+    /// Indicates whether the provider has verified the user's email address.
+    pub email_verified: Option<bool>,
+
     /// The URL to the user's avatar/profile picture, if available.
     pub avatar_url: Option<String>,
 
@@ -28,4 +31,27 @@ pub struct ConnectUser {
 
     /// The token expiration time in seconds from the time it was granted (if provided).
     pub expires_in: Option<u64>,
+}
+
+use async_trait::async_trait;
+
+/// Helper trait to seamlessly integrate `ConnectUser` with databases and ORMs (like SQLx, Diesel, rullst-orm).
+/// By implementing this trait on your custom database User model or repository, you can easily 
+/// save or update users directly from the OAuth profile.
+#[async_trait]
+pub trait IntoDatabaseUser<T> {
+    /// Inserts or updates the user in the database based on the OAuth profile.
+    /// Returns the database-specific User model or an error.
+    async fn sync_from_oauth(profile: &ConnectUser) -> Result<T, crate::error::ConnectError>;
+}
+
+/// Represents the response from a device authorization request (RFC 8628).
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct DeviceAuthorizationResponse {
+    pub device_code: String,
+    pub user_code: String,
+    pub verification_uri: String,
+    pub verification_uri_complete: Option<String>,
+    pub expires_in: u64,
+    pub interval: Option<u64>,
 }

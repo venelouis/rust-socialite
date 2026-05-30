@@ -164,6 +164,7 @@ impl Provider for AppleProvider {
             name: String::with_capacity(256), // Developer needs to extract this from the form_post on first login
             email: payload["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: None, // Apple does not provide avatars
+            email_verified: None,
             raw_data: payload,
             access_token: id_token_str.to_string(),
             refresh_token: None,

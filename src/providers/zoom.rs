@@ -75,6 +75,7 @@ impl Provider for ZoomProvider {
             name,
             email: user_res["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: user_res["pic_url"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

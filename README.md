@@ -18,13 +18,16 @@
 - 🧩 **Standardized**: All providers return a unified `ConnectUser` struct.
 - 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`ConnectError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Rullst, Axum, Actix, Leptos, Dioxus, or any other framework.
+- 🔐 **Enterprise Security**: Built-in OIDC Discovery, JWKS validation, and automated CSRF `tower-sessions`.
+- 📺 **Device Flow**: Native RFC 8628 support for headless CLI and Smart TV auth.
+- 🛠️ **Testing**: Embedded Mock IdP router for seamless offline local E2E testing.
 
 > 📚 **Important Documents:**
-> - [CHANGELOG.md](CHANGELOG.md): See what's new in v5.0.2.
+> - [CHANGELOG.md](CHANGELOG.md): See what's new in v6.1.0.
 > - [ROADMAP.md](ROADMAP.md): Discover our path to v1.0.0.
 > - [AUDIT.md](AUDIT.md): Complete security, performance, and maintainability audit report.
 
-## 📦 Supported Providers (v5.2.0)
+## 📦 Supported Providers (v6.1.0)
 
 Official support for 33 major providers:
 
@@ -74,7 +77,7 @@ cargo add rullst-connect
 Or manually add it to your `Cargo.toml`:
 ```toml
 [dependencies]
-rullst-connect = "5.2.3"
+rullst-connect = "6.1.0"
 tokio = { version = "1.52", features = ["full"] }
 ```
 

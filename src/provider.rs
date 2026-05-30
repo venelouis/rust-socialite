@@ -101,6 +101,18 @@ pub trait Provider: Send + Sync {
             "Token revocation is not supported by this provider".to_string(),
         ))
     }
+
+    /// Initiates a device authorization flow (RFC 8628).
+    /// Returns the device code, user code, and verification URI.
+    async fn request_device_code(&self) -> Result<crate::user::DeviceAuthorizationResponse, crate::error::ConnectError> {
+        Err(crate::error::ConnectError::Provider("Device Authorization is not supported by this provider".into()))
+    }
+
+    /// Polls the provider for the access token during a device authorization flow.
+    /// Returns the user's profile if the user has authorized the device.
+    async fn poll_device_token(&self, _device_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
+        Err(crate::error::ConnectError::Provider("Device Authorization is not supported by this provider".into()))
+    }
 }
 
 #[cfg(test)]

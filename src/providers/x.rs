@@ -82,7 +82,8 @@ impl Provider for XProvider {
             email: None, // X v2 does not return email via this endpoint by default
             avatar_url: data["profile_image_url"]
                 .as_str()
-                .map(|s: &str| s.to_string()),
+                .map(|s: &str| s.replace("_normal.", ".")),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

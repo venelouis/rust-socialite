@@ -16,23 +16,25 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 ## 🔮 Not So Distant Future
 
 - [x] **HTTP Client Agnostic:** Generic client support (via `HttpClient` trait) allowing the use of `surf`, `reqwest-middleware`, or others instead of forcing `reqwest`. (Done in v5.2.0)
-- **Database Integration (rullst-orm, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rullst-orm` to keep the Laravel ecosystem vibe in Rust!
+- [x] **Database Integration (rullst-orm, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rullst-orm` to keep the Laravel ecosystem vibe in Rust!
 - [x] **HTTP Proxy Support:** Allow the configuration of corporate proxies for locked-down environments. (Done in v5.2.0)
 - [x] **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires. (Done in v5.1.0)
-- **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
+- [x] **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
 - [x] **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks (Leptos added in v5.2.0).
 - [x] **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures. (Done in v5.2.0)
-- **Rate Limiting & Advanced Retry Policies:** Offer integrated wrappers (e.g., via `reqwest-middleware` and `reqwest-retry`) to perform native exponential backoff when providers reject requests due to rate limits (HTTP 429).
-- **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `ConnectError` to drastically improve debugging experience.
+- [x] **Rate Limiting & Advanced Retry Policies:** Offer integrated wrappers (e.g., via `reqwest-middleware` and `reqwest-retry`) to perform native exponential backoff when providers reject requests due to rate limits (HTTP 429).
+- [x] **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `ConnectError` to drastically improve debugging experience.
 
 ## 🚀 Phase 5: High-Value & Developer Experience (Immediate Value)
 
-- **Strict Profile Normalization (`UniversalProfile`):** Expand on avatar standardization by guaranteeing a strictly typed and identical struct (`id`, `name`, `email`, `email_verified`, `avatar_url`) regardless of the underlying provider's payload quirks.
+- [x] **Strict Profile Normalization (`UniversalProfile`):** Expand on avatar standardization by guaranteeing a strictly typed and identical struct (`id`, `name`, `email`, `email_verified`, `avatar_url`) regardless of the underlying provider's payload quirks.
 - **Secure State/Nonce Handling (State Store Trait):** Native integrations (e.g., via `tower-sessions`) to automatically save and validate CSRF `state` and `nonce` securely, removing the burden from the developer.
 - **Native Apple Secret Generation:** Handle "Sign In with Apple" painlessly by accepting a `.p8` key and Key ID to generate the required JWT `client_secret` on-the-fly.
 - **Standalone Dockerized Mock IdP:** A pre-packaged, ultra-lightweight Docker image (`rullst-connect-mock`) that perfectly simulates Google, Apple, and GitHub OAuth endpoints, allowing development teams to run full E2E local tests completely offline and without hitting API rate limits.
-- **Enterprise-Grade Observability:** Native integration with the `tracing` crate. Emit detailed spans during token exchanges and profile fetching to simplify debugging in production and distributed systems.
-- **OIDC Auto-Discovery (`.well-known`):** Create a generic `OidcProvider::discover("url")` that automatically downloads the OpenID configuration and sets up endpoints internally in a single line of code.
+- [x] **Enterprise-Grade Observability:** Native integration with the `tracing` crate. Emit detailed spans during token exchanges and profile fetching to simplify debugging in production and distributed systems.
+- [x] **OIDC Auto-Discovery (`.well-known`):** Create a generic `OidcProvider::discover("url")` that automatically downloads the OpenID configuration and sets up endpoints internally in a single line of code.
+- **Device Authorization Flow (RFC 8628):** Support for CLI and Smart TV logins where users enter a code on a secondary device, a critical feature for headless Rust applications.
+- **Cryptographic OIDC Signature Validation (JWKS):** Automatically fetch provider Public Keys and cryptographically verify the RSA signature of the `id_token` JWT to guarantee zero spoofing and meet enterprise security standards.
 
 ## 🏢 Phase 6: Enterprise Identity & B2B SaaS (Scale & Compliance)
 

@@ -68,6 +68,7 @@ impl Provider for TiktokProvider {
             name: data["display_name"].as_str().unwrap_or("").to_string(),
             email: None, // TikTok API v2 does not expose email publicly
             avatar_url: data["avatar_url"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

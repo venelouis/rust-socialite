@@ -63,6 +63,7 @@ impl Provider for NotionProvider {
             expires_in: token_res["expires_in"]
                 .as_u64()
                 .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64)),
+            email_verified: None,
             raw_data: token_res, // Notion returns user data right in the token response
         })
     }
@@ -91,6 +92,7 @@ impl Provider for NotionProvider {
                 .as_str()
                 .map(|s: &str| s.to_string()),
             avatar_url: user["avatar_url"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

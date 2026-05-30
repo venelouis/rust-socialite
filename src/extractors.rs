@@ -112,3 +112,54 @@ mod tests {
         assert_eq!(callback.error_description, None);
     }
 }
+
+#[cfg(feature = "axum-session")]
+pub struct AuthSession {
+    pub callback: AuthCallback,
+}
+
+#[cfg(feature = "axum-session")]
+impl<S> axum::extract::FromRequestParts<S> for AuthSession
+where
+    S: Send + Sync,
+{
+    type Rejection = axum::response::Response;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let session = parts
+            .extensions
+            .get::<tower_sessions::Session>()
+            .cloned()
+            .ok_or_else(|| {
+                axum::response::IntoResponse::into_response((
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "Missing tower-sessions extension",
+                ))
+            })?;
+
+        let axum::extract::Query(callback) =
+            axum::extract::Query::<AuthCallback>::from_request_parts(parts, state)
+                .await
+                .map_err(|e| axum::response::IntoResponse::into_response(e))?;
+
+        if let Some(state_param) = &callback.state {
+            let session_state: Option<String> = session.get("oauth_state").await.unwrap_or(None);
+            if let Some(saved) = session_state {
+                if state_param == &saved {
+                    // Valid! Remove it so it can't be reused
+                    let _ = session.remove::<String>("oauth_state").await;
+                    return Ok(Self { callback });
+                }
+            }
+            return Err(axum::response::IntoResponse::into_response((
+                axum::http::StatusCode::BAD_REQUEST,
+                "CSRF state mismatch",
+            )));
+        }
+
+        Ok(Self { callback })
+    }
+}

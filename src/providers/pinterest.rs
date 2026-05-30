@@ -73,6 +73,7 @@ impl Provider for PinterestProvider {
             avatar_url: user_res["profile_image"]
                 .as_str()
                 .map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,

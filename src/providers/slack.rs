@@ -74,6 +74,7 @@ impl Provider for SlackProvider {
             name: user_data["name"].as_str().unwrap_or("").to_string(),
             email: user_data["email"].as_str().map(|s: &str| s.to_string()),
             avatar_url: user_data["image_512"].as_str().map(|s: &str| s.to_string()),
+            email_verified: None,
             raw_data: user_res,
             access_token: access_token.to_string(),
             refresh_token: None,
