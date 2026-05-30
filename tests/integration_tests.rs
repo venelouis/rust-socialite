@@ -25,7 +25,7 @@ impl HttpClient for WiremockInterceptClient {
     async fn execute(
         &self,
         mut req: HttpRequest,
-    ) -> Result<HttpResponse, rullst_connect::error::SocialiteError> {
+    ) -> Result<HttpResponse, rullst_connect::error::ConnectError> {
         let parsed = url::Url::parse(&req.url).unwrap();
         // Redirect the request to our mock server instead of github.com or api.github.com
         req.url = format!("{}{}", self.mock_server_url, parsed.path());
@@ -114,6 +114,6 @@ async fn test_github_token_error() {
 
     let err = provider.get_user("bad_code").await.unwrap_err();
 
-    // Using string matching since SocialiteError implements Display but maybe not PartialEq
+    // Using string matching since ConnectError implements Display but maybe not PartialEq
     assert!(err.to_string().contains("HTTP Error: 400"));
 }

@@ -26,13 +26,13 @@ pub struct AuthCallback {
 
 impl AuthCallback {
     /// Helper to verify the CSRF state parameter.
-    pub fn verify_state(&self, session_state: &str) -> Result<(), crate::error::SocialiteError> {
+    pub fn verify_state(&self, session_state: &str) -> Result<(), crate::error::ConnectError> {
         match &self.state {
             Some(state) if state == session_state => Ok(()),
-            Some(_) => Err(crate::error::SocialiteError::InvalidState(
+            Some(_) => Err(crate::error::ConnectError::InvalidState(
                 "CSRF state mismatch".into(),
             )),
-            None => Err(crate::error::SocialiteError::InvalidState(
+            None => Err(crate::error::ConnectError::InvalidState(
                 "State missing in callback".into(),
             )),
         }

@@ -16,10 +16,10 @@ pub mod user;
 #[macro_use]
 pub mod macros;
 
-pub use error::SocialiteError;
+pub use error::ConnectError;
 
 pub use provider::Provider;
-pub use user::SocialiteUser;
+pub use user::ConnectUser;
 
 /// The main entry point for the Socialite library.
 pub struct Socialite;

@@ -1,4 +1,4 @@
-# 📋 Complete Audit - Rust Socialite v5.2.0
+# 📋 Complete Audit - Rullst Connect v5.2.0
 
 **Date**: May 29, 2026  
 **Audited Version**: 5.2.0  
@@ -92,7 +92,7 @@ for _ in 0..100 {
 ## 🐛 Bug Audit
 
 ### ✅ Strengths
-- **Error handling**: Consistent use of `Result<T, SocialiteError>`
+- **Error handling**: Consistent use of `Result<T, ConnectError>`
 - **Async trait**: `async_trait` well implemented
 - **Unit tests**: Tests in pkce.rs, macros.rs, extractors.rs, provider.rs, auth0.rs
 
@@ -147,7 +147,7 @@ Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Failed to get user".to_string()),
 #### 2. **Limited inline documentation**
 - Some methods have no documentation
 - Portuguese comments mixed with English
-- Missing documentation for SocialiteUser fields
+- Missing documentation for ConnectUser fields
 
 #### 3. **Generic error messages**
 ```rust

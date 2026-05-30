@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [5.0.1] - 2026-05-27
 
 ### Added
-- **Tokens returned on User**: `SocialiteUser` now contains `access_token`, `refresh_token`, and `expires_in` fields so you can interact with the provider's API immediately.
+- **Tokens returned on User**: `ConnectUser` now contains `access_token`, `refresh_token`, and `expires_in` fields so you can interact with the provider's API immediately.
 - **Frontend/Mobile Integrations**: Added `get_user_from_token(access_token)` to all providers. This allows your backend to securely fetch the user profile when the OAuth flow is handled natively on the frontend (e.g. mobile apps, React, Vue).
 - **Framework Integrations (Axum & Actix)**: Added `axum` and `actix-web` optional features in `Cargo.toml`. Provides native extractors (`AuthCallback`) for seamless URL parsing in route handlers.
 - **Token Revocation**: New `revoke_token` method on the `Provider` trait for direct logout at the provider level (reference implementation added for Google).
@@ -84,4 +84,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.0] - Previous stable version
 - Initial open-source release with 33 OAuth2 providers supported.
-- Standardized `SocialiteUser` and async support.
+- Standardized `ConnectUser` and async support.

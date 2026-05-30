@@ -1,6 +1,6 @@
 use crate::client::HttpClientExt;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -25,7 +25,7 @@ impl Provider for GoogleProvider {
     async fn get_user(
         &self,
         auth_code: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         // Exchange code for token
         let token_res = self
             .http_client
@@ -44,7 +44,7 @@ impl Provider for GoogleProvider {
             .await?;
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token("Failed to get access_token".to_string())
+            crate::error::ConnectError::Token("Failed to get access_token".to_string())
         })?;
 
         let mut user = if let Some(id_token) = token_res["id_token"].as_str() {
@@ -56,7 +56,7 @@ impl Provider for GoogleProvider {
                     base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(parts[1])
                 {
                     if let Ok(payload) = serde_json::from_slice::<Value>(&payload_bytes) {
-                        SocialiteUser {
+                        ConnectUser {
                             id: payload["sub"].as_str().unwrap_or("").to_string(),
                             name: payload["name"].as_str().unwrap_or("").to_string(),
                             email: payload["email"].as_str().map(|s: &str| s.to_string()),
@@ -91,7 +91,7 @@ impl Provider for GoogleProvider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         // Fetch user profile
         let user_res = self
             .http_client
@@ -103,7 +103,7 @@ impl Provider for GoogleProvider {
             .json::<Value>()
             .await?;
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: user_res["sub"].as_str().unwrap_or("").to_string(),
             name: user_res["name"].as_str().unwrap_or("").to_string(),
             email: user_res["email"].as_str().map(|s: &str| s.to_string()),
@@ -115,7 +115,7 @@ impl Provider for GoogleProvider {
         })
     }
 
-    async fn revoke_token(&self, token: &str) -> Result<(), crate::error::SocialiteError> {
+    async fn revoke_token(&self, token: &str) -> Result<(), crate::error::ConnectError> {
         self.http_client
             .post("https://oauth2.googleapis.com/revoke")
             .form(&[("token", token)])
@@ -132,7 +132,7 @@ impl Provider for GoogleProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -150,14 +150,14 @@ impl Provider for GoogleProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

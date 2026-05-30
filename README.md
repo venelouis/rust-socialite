@@ -1,4 +1,4 @@
-# Rust Socialite 🦀
+# Rullst Connect 🦀
 
 [![Crates.io](https://img.shields.io/crates/v/rullst-connect.svg)](https://crates.io/crates/rullst-connect)
 [![Downloads](https://img.shields.io/crates/d/rullst-connect.svg)](https://crates.io/crates/rullst-connect)
@@ -10,13 +10,13 @@
 [![Audit: 10/10](https://img.shields.io/badge/Audit-10%2F10-success.svg)](AUDIT.md)
 [![Zero Panics](https://img.shields.io/badge/Panics-0-success.svg)](SECURITY_AUDIT.md)
 
-**Rust Socialite** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
+**Rullst Connect** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
 
 ## ✨ Features
 
 - 🚀 **Async & Fast**: Built on top of `tokio` and `reqwest`.
-- 🧩 **Standardized**: All providers return a unified `SocialiteUser` struct.
-- 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
+- 🧩 **Standardized**: All providers return a unified `ConnectUser` struct.
+- 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`ConnectError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Rullst, Axum, Actix, Leptos, Dioxus, or any other framework.
 
 > 📚 **Important Documents:**
@@ -102,7 +102,7 @@ let url = github.redirect_url();
 ```
 
 ### 3. Handle the Callback & Get User
-When the user returns to your callback URL with a `code` query parameter, exchange it for a `SocialiteUser`:
+When the user returns to your callback URL with a `code` query parameter, exchange it for a `ConnectUser`:
 
 ```rust
 match github.get_user(code).await {

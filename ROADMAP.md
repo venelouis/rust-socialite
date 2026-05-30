@@ -23,7 +23,7 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 - [x] **Leptos & Dioxus Integration:** Extractors for Fullstack / WebAssembly Rust frameworks (Leptos added in v5.2.0).
 - [x] **Integration Tests with Mock Servers (`wiremock`):** Cover the real HTTP flow to guarantee that the parser correctly handles incomplete responses, expired tokens, or network failures. (Done in v5.2.0)
 - **Rate Limiting & Advanced Retry Policies:** Offer integrated wrappers (e.g., via `reqwest-middleware` and `reqwest-retry`) to perform native exponential backoff when providers reject requests due to rate limits (HTTP 429).
-- **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `SocialiteError` to drastically improve debugging experience.
+- **Unified Provider Error Extraction:** Map error responses from providers (like "invalid_grant") into structured enums within `ConnectError` to drastically improve debugging experience.
 
 ## 🚀 Phase 5: High-Value & Developer Experience (Immediate Value)
 

@@ -24,7 +24,7 @@ pub struct HttpResponse {
 #[async_trait]
 pub trait HttpClient: Send + Sync {
     async fn execute(&self, req: HttpRequest)
-    -> Result<HttpResponse, crate::error::SocialiteError>;
+    -> Result<HttpResponse, crate::error::ConnectError>;
 }
 
 /// Extension trait to provide the fluent builder API (like reqwest).
@@ -97,7 +97,7 @@ impl<'a> RequestBuilder<'a> {
         self
     }
 
-    pub async fn send(self) -> Result<ResponseWrapper, crate::error::SocialiteError> {
+    pub async fn send(self) -> Result<ResponseWrapper, crate::error::ConnectError> {
         let res = self.client.execute(self.req).await?;
         Ok(ResponseWrapper { res })
     }
@@ -108,9 +108,9 @@ pub struct ResponseWrapper {
 }
 
 impl ResponseWrapper {
-    pub fn error_for_status(self) -> Result<Self, crate::error::SocialiteError> {
+    pub fn error_for_status(self) -> Result<Self, crate::error::ConnectError> {
         if self.res.status >= 400 {
-            Err(crate::error::SocialiteError::Provider(format!(
+            Err(crate::error::ConnectError::Provider(format!(
                 "HTTP Error: {}",
                 self.res.status
             )))
@@ -119,7 +119,7 @@ impl ResponseWrapper {
         }
     }
 
-    pub async fn json<T>(self) -> Result<T, crate::error::SocialiteError>
+    pub async fn json<T>(self) -> Result<T, crate::error::ConnectError>
     where
         T: serde::de::DeserializeOwned,
     {
@@ -155,7 +155,7 @@ impl HttpClient for ReqwestClient {
     async fn execute(
         &self,
         req: HttpRequest,
-    ) -> Result<HttpResponse, crate::error::SocialiteError> {
+    ) -> Result<HttpResponse, crate::error::ConnectError> {
         let method = match req.method.as_str() {
             "GET" => reqwest::Method::GET,
             "POST" => reqwest::Method::POST,

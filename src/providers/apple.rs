@@ -1,5 +1,5 @@
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use base64::Engine;
 use jsonwebtoken::{Algorithm, EncodingKey, Header, encode};
@@ -70,7 +70,7 @@ impl AppleProvider {
         self
     }
 
-    fn generate_client_secret(&self) -> Result<String, crate::error::SocialiteError> {
+    fn generate_client_secret(&self) -> Result<String, crate::error::ConnectError> {
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
         let claims = AppleClaims {
             iss: self.team_id.clone(),
@@ -111,7 +111,7 @@ impl Provider for AppleProvider {
     async fn get_user(
         &self,
         auth_code: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let client_secret = self.generate_client_secret()?;
 
         let token_res = self
@@ -132,7 +132,7 @@ impl Provider for AppleProvider {
 
         // Apple returns user data inside an "id_token" (JWT)
         let id_token_str = token_res["id_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token("Failed to get id_token from Apple".to_string())
+            crate::error::ConnectError::Token("Failed to get id_token from Apple".to_string())
         })?;
         let access_token = token_res["access_token"].as_str().unwrap_or("").to_string();
 
@@ -151,10 +151,10 @@ impl Provider for AppleProvider {
     async fn get_user_from_token(
         &self,
         id_token_str: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let parts: Vec<&str> = id_token_str.split('.').collect();
         if parts.len() != 3 {
-            return Err(crate::error::SocialiteError::Provider(
+            return Err(crate::error::ConnectError::Provider(
                 "Invalid id_token format".to_string(),
             ));
         }
@@ -162,7 +162,7 @@ impl Provider for AppleProvider {
         let payload_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(parts[1])?;
         let payload: Value = serde_json::from_slice(&payload_bytes)?;
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: payload["sub"].as_str().unwrap_or("").to_string(),
             name: String::with_capacity(256), // Developer needs to extract this from the form_post on first login
             email: payload["email"].as_str().map(|s: &str| s.to_string()),
@@ -181,7 +181,7 @@ impl Provider for AppleProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let client_secret = self.generate_client_secret()?;
 
         let token_res = self
@@ -201,14 +201,14 @@ impl Provider for AppleProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

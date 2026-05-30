@@ -3,7 +3,7 @@ use serde_json::Value;
 
 /// Represents a standardized user profile returned from any OAuth2 provider.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SocialiteUser {
+pub struct ConnectUser {
     /// The unique identifier of the user in the provider's system.
     pub id: String,
 

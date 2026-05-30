@@ -39,7 +39,7 @@ async fn main() {
 async fn index() -> Html<&'static str> {
     Html(
         r#"
-        <h1>Rust Socialite Example</h1>
+        <h1>Rullst Connect Example</h1>
         <a href="/auth/google">Login com Google</a><br><br>
         <a href="/auth/github">Login com GitHub</a>
     "#,
