@@ -4,9 +4,9 @@ use axum::{
     response::{Html, IntoResponse, Redirect},
     routing::get,
 };
-use rust_socialite::provider::Provider;
-use rust_socialite::providers::github::GithubProvider;
-use rust_socialite::providers::google::GoogleProvider;
+use rullst_connect::provider::Provider;
+use rullst_connect::providers::github::GithubProvider;
+use rullst_connect::providers::google::GoogleProvider;
 use serde::Deserialize;
 
 #[derive(Deserialize)]

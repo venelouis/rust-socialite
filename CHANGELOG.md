@@ -75,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Continuous Integration**: Added GitHub Actions (Publish to Crates.io) to automate new version deployments via Tags.
 - **Native OIDC Support**: OIDC providers (like Google and Apple) now feature a "Fast Path" that decodes the `id_token` directly via base64, extracting name, email, and photo instantly without making a secondary HTTP request! A massive performance boost.
 - **PKCE Support (Proof Key for Code Exchange)**: All providers now have native support for modern PKCE security via the `.with_pkce(code_challenge)` builder method.
-- **Prelude Module (`rust_socialite::prelude::*`)**: Added a prelude module for unified imports (ideal for developers and AI assistants).
+- **Prelude Module (`rullst_connect::prelude::*`)**: Added a prelude module for unified imports (ideal for developers and AI assistants).
 
 ### Changed
 - **Architectural Macros**: All providers now use the internal `define_provider!` macro, which centralizes constructors, state, PKCE, scopes, and reduces hundreds of lines of boilerplate.

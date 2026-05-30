@@ -1,6 +1,6 @@
-# 🗺️ rust-socialite Roadmap
+# 🗺️ rullst-connect Roadmap
 
-Welcome to the official roadmap for `rust-socialite`! The library currently supports 33 providers, dynamic token parsing, `get_user_from_token` extraction, CSRF protection (via `state`), and `scopes` customization.
+Welcome to the official roadmap for `rullst-connect`! The library currently supports 33 providers, dynamic token parsing, `get_user_from_token` extraction, CSRF protection (via `state`), and `scopes` customization.
 
 For our journey towards the **`v1.0.0`** release (Enterprise Level), we have planned the following major additions which are actively being worked on:
 
@@ -16,7 +16,7 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 ## 🔮 Not So Distant Future
 
 - [x] **HTTP Client Agnostic:** Generic client support (via `HttpClient` trait) allowing the use of `surf`, `reqwest-middleware`, or others instead of forcing `reqwest`. (Done in v5.2.0)
-- **Database Integration (rust-eloquent, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rust-eloquent` to keep the Laravel ecosystem vibe in Rust!
+- **Database Integration (rullst-orm, SQLx, Diesel):** Helper traits (e.g., `IntoDatabaseUser`) to seamlessly save the user into the database, with special focus on `rullst-orm` to keep the Laravel ecosystem vibe in Rust!
 - [x] **HTTP Proxy Support:** Allow the configuration of corporate proxies for locked-down environments. (Done in v5.2.0)
 - [x] **Refresh Token Module:** Automated `refresh_token` support in case the primary token expires. (Done in v5.1.0)
 - **Universal Avatar Standardization:** Advanced parsing to guarantee optimal resolutions for returned profile pictures.
@@ -30,20 +30,20 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 - **Strict Profile Normalization (`UniversalProfile`):** Expand on avatar standardization by guaranteeing a strictly typed and identical struct (`id`, `name`, `email`, `email_verified`, `avatar_url`) regardless of the underlying provider's payload quirks.
 - **Secure State/Nonce Handling (State Store Trait):** Native integrations (e.g., via `tower-sessions`) to automatically save and validate CSRF `state` and `nonce` securely, removing the burden from the developer.
 - **Native Apple Secret Generation:** Handle "Sign In with Apple" painlessly by accepting a `.p8` key and Key ID to generate the required JWT `client_secret` on-the-fly.
-- **Standalone Dockerized Mock IdP:** A pre-packaged, ultra-lightweight Docker image (`rust-socialite-mock`) that perfectly simulates Google, Apple, and GitHub OAuth endpoints, allowing development teams to run full E2E local tests completely offline and without hitting API rate limits.
+- **Standalone Dockerized Mock IdP:** A pre-packaged, ultra-lightweight Docker image (`rullst-connect-mock`) that perfectly simulates Google, Apple, and GitHub OAuth endpoints, allowing development teams to run full E2E local tests completely offline and without hitting API rate limits.
 - **Enterprise-Grade Observability:** Native integration with the `tracing` crate. Emit detailed spans during token exchanges and profile fetching to simplify debugging in production and distributed systems.
 - **OIDC Auto-Discovery (`.well-known`):** Create a generic `OidcProvider::discover("url")` that automatically downloads the OpenID configuration and sets up endpoints internally in a single line of code.
 
 ## 🏢 Phase 6: Enterprise Identity & B2B SaaS (Scale & Compliance)
 
-*While other libraries charge thousands of dollars for these B2B and compliance-heavy features, `rust-socialite` aims to democratize enterprise-grade security by providing them completely free and open source.*
+*While other libraries charge thousands of dollars for these B2B and compliance-heavy features, `rullst-connect` aims to democratize enterprise-grade security by providing them completely free and open source.*
 
 - **Dynamic Multi-Tenancy (B2B SaaS Ready):** Allow providers to be instantiated or hydrated dynamically per request, fetching credentials (Client ID/Secret) at runtime for multi-tenant architectures.
 - **SAML 2.0 Support:** The absolute gold standard for massive corporations (Banks, Government, Fortune 500). Supporting secure XML-based SAML integration with Microsoft Entra ID (Azure AD), Okta, and PingIdentity.
 - **SSO Domain Routing (Home Realm Discovery):** If a user types `user@acme-corp.com`, automatically route them to Acme Corp's specific Okta/Azure AD login screen without requiring them to click a specific provider button.
 - **Advanced RBAC/ABAC Group Mapping:** Automatically mapping OAuth/SAML scopes and corporate groups directly into database roles and permissions upon login.
 - **Compliance & Audit Logging (SOC2/GDPR Ready):** Built-in middleware to generate structured, legally compliant audit trails (who logged in, IP, device footprint, failed attempts) ready to be ingested by SIEMs like Splunk or Datadog.
-- **OIDC Back-Channel Logout:** Support for receiving secure webhooks from the Identity Provider. If an employee logs out centrally, `rust-socialite` automatically terminates their local application session.
+- **OIDC Back-Channel Logout:** Support for receiving secure webhooks from the Identity Provider. If an employee logs out centrally, `rullst-connect` automatically terminates their local application session.
 
 ## 🛡️ Phase 7: Bleeding-Edge Security & IoT (High Security)
 

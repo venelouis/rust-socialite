@@ -67,7 +67,7 @@ impl Provider for RedditProvider {
             .http_client
             .get("https://oauth.reddit.com/api/v1/me")
             .header("Authorization", format!("Bearer {}", access_token))
-            .header("User-Agent", "rust-socialite/0.2.1")
+            .header("User-Agent", "rullst-connect/0.2.1")
             .send()
             .await?
             .error_for_status()?

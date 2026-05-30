@@ -1,4 +1,4 @@
-use rust_socialite::providers::github::GithubProvider;
+use rullst_connect::providers::github::GithubProvider;
 use std::time::Instant;
 
 fn main() {

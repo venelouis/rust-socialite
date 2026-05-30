@@ -3,7 +3,7 @@
 //! A convenient module to import everything you need to authenticate users via OAuth2.
 //!
 //! ```rust,ignore
-//! use rust_socialite::prelude::*;
+//! use rullst_connect::prelude::*;
 //! ```
 
 pub use crate::error::SocialiteError;

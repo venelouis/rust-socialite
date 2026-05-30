@@ -1,6 +1,6 @@
-# Contributing to rust-socialite
+# Contributing to rullst-connect
 
-First off, thank you for considering contributing to `rust-socialite`! It's people like you that make this tool better for everyone.
+First off, thank you for considering contributing to `rullst-connect`! It's people like you that make this tool better for everyone.
 
 ## Getting Started
 

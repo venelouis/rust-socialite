@@ -74,7 +74,7 @@ impl Provider for GithubProvider {
             .http_client
             .get("https://api.github.com/user")
             .header("Authorization", format!("Bearer {}", access_token))
-            .header("User-Agent", "rust-socialite") // GitHub API requires User-Agent
+            .header("User-Agent", "rullst-connect") // GitHub API requires User-Agent
             .send()
             .await?
             .error_for_status()?
