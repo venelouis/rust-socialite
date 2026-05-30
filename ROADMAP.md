@@ -28,13 +28,13 @@ For our journey towards the **`v1.0.0`** release (Enterprise Level), we have pla
 ## 🚀 Phase 5: High-Value & Developer Experience (Immediate Value)
 
 - [x] **Strict Profile Normalization (`UniversalProfile`):** Expand on avatar standardization by guaranteeing a strictly typed and identical struct (`id`, `name`, `email`, `email_verified`, `avatar_url`) regardless of the underlying provider's payload quirks.
-- **Secure State/Nonce Handling (State Store Trait):** Native integrations (e.g., via `tower-sessions`) to automatically save and validate CSRF `state` and `nonce` securely, removing the burden from the developer.
-- **Native Apple Secret Generation:** Handle "Sign In with Apple" painlessly by accepting a `.p8` key and Key ID to generate the required JWT `client_secret` on-the-fly.
-- **Standalone Dockerized Mock IdP:** A pre-packaged, ultra-lightweight Docker image (`rullst-connect-mock`) that perfectly simulates Google, Apple, and GitHub OAuth endpoints, allowing development teams to run full E2E local tests completely offline and without hitting API rate limits.
+- [x] **Secure State/Nonce Handling (`AuthSession`):** Native integrations (via `tower-sessions`) to automatically save and validate CSRF `state` and `nonce` securely, removing the burden from the developer.
+- [x] **Native Apple Secret Generation:** Handle "Sign In with Apple" painlessly by accepting a `.p8` key and Key ID to generate the required JWT `client_secret` on-the-fly.
+- [x] **Embedded Local Mock IdP:** An embedded, ultra-lightweight Axum router (`mock_idp`) that perfectly simulates OAuth endpoints, allowing development teams to run full E2E local tests completely offline.
 - [x] **Enterprise-Grade Observability:** Native integration with the `tracing` crate. Emit detailed spans during token exchanges and profile fetching to simplify debugging in production and distributed systems.
 - [x] **OIDC Auto-Discovery (`.well-known`):** Create a generic `OidcProvider::discover("url")` that automatically downloads the OpenID configuration and sets up endpoints internally in a single line of code.
-- **Device Authorization Flow (RFC 8628):** Support for CLI and Smart TV logins where users enter a code on a secondary device, a critical feature for headless Rust applications.
-- **Cryptographic OIDC Signature Validation (JWKS):** Automatically fetch provider Public Keys and cryptographically verify the RSA signature of the `id_token` JWT to guarantee zero spoofing and meet enterprise security standards.
+- [x] **Device Authorization Flow (RFC 8628):** Support for CLI and Smart TV logins where users enter a code on a secondary device, a critical feature for headless Rust applications.
+- [x] **Cryptographic OIDC Signature Validation (JWKS):** Automatically fetch provider Public Keys and cryptographically verify the RSA signature of the `id_token` JWT to guarantee zero spoofing and meet enterprise security standards.
 
 ## 🏢 Phase 6: Enterprise Identity & B2B SaaS (Scale & Compliance)
 
