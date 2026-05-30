@@ -145,15 +145,20 @@ impl ReqwestClient {
 
         #[cfg(feature = "retry")]
         {
-            let retry_policy = reqwest_retry::policies::ExponentialBackoff::builder().build_with_max_retries(3);
+            let retry_policy =
+                reqwest_retry::policies::ExponentialBackoff::builder().build_with_max_retries(3);
             let client = reqwest_middleware::ClientBuilder::new(reqwest_client)
-                .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(retry_policy))
+                .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(
+                    retry_policy,
+                ))
                 .build();
             Self { client }
         }
 
         #[cfg(not(feature = "retry"))]
-        Self { client: reqwest_client }
+        Self {
+            client: reqwest_client,
+        }
     }
 
     #[cfg(feature = "retry")]
@@ -164,9 +169,12 @@ impl ReqwestClient {
             .build()
             .unwrap_or_else(|_| reqwest::Client::new());
 
-        let retry_policy = reqwest_retry::policies::ExponentialBackoff::builder().build_with_max_retries(max_retries);
+        let retry_policy = reqwest_retry::policies::ExponentialBackoff::builder()
+            .build_with_max_retries(max_retries);
         let client = reqwest_middleware::ClientBuilder::new(reqwest_client)
-            .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(retry_policy))
+            .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(
+                retry_policy,
+            ))
             .build();
         Self { client }
     }
@@ -209,7 +217,10 @@ impl HttpClient for ReqwestClient {
                 builder = builder.json(j);
             }
 
-            builder.send().await.map_err(crate::error::ConnectError::Reqwest)?
+            builder
+                .send()
+                .await
+                .map_err(crate::error::ConnectError::Reqwest)?
         };
 
         #[cfg(feature = "retry")]
@@ -231,11 +242,16 @@ impl HttpClient for ReqwestClient {
             if !req.form.is_empty() {
                 // reqwest_middleware::RequestBuilder doesn't have `.form()`, we set body and headers manually
                 let body = serde_urlencoded::to_string(&req.form).unwrap_or_default();
-                builder = builder.body(body).header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+                builder = builder.body(body).header(
+                    reqwest::header::CONTENT_TYPE,
+                    "application/x-www-form-urlencoded",
+                );
             } else if let Some(j) = &req.json {
                 // reqwest_middleware::RequestBuilder doesn't have `.json()`, we set body and headers manually
                 let body = serde_json::to_string(j).unwrap_or_default();
-                builder = builder.body(body).header(reqwest::header::CONTENT_TYPE, "application/json");
+                builder = builder
+                    .body(body)
+                    .header(reqwest::header::CONTENT_TYPE, "application/json");
             }
 
             builder.send().await.map_err(|e| {
@@ -248,7 +264,10 @@ impl HttpClient for ReqwestClient {
         };
         let status = res.status().as_u16();
         // Read body as text first in case it's not JSON
-        let text = res.text().await.map_err(crate::error::ConnectError::Reqwest)?;
+        let text = res
+            .text()
+            .await
+            .map_err(crate::error::ConnectError::Reqwest)?;
         let body = serde_json::from_str(&text).unwrap_or(Value::String(text));
 
         Ok(HttpResponse { status, body })
