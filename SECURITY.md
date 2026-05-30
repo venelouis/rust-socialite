@@ -7,15 +7,13 @@ currently being supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 5.x.x   | :white_check_mark: |
+| < 5.0.0 | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Please do not report security vulnerabilities through public GitHub issues.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+If you believe you have found a security vulnerability in `rullst-connect`, please report it to us via email at your-email@example.com.
+
+We will acknowledge receipt of your vulnerability report and strive to send you regular updates about our progress. If a fix is necessary, we will coordinate a release date with you.

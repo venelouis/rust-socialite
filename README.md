@@ -1,22 +1,22 @@
-# Rust Socialite 🦀
+# Rullst Connect 🦀
 
-[![Crates.io](https://img.shields.io/crates/v/rust-socialite.svg)](https://crates.io/crates/rust-socialite)
-[![Downloads](https://img.shields.io/crates/d/rust-socialite.svg)](https://crates.io/crates/rust-socialite)
-[![Documentation](https://docs.rs/rust-socialite/badge.svg)](https://docs.rs/rust-socialite)
+[![Crates.io](https://img.shields.io/crates/v/rullst-connect.svg)](https://crates.io/crates/rullst-connect)
+[![Downloads](https://img.shields.io/crates/d/rullst-connect.svg)](https://crates.io/crates/rullst-connect)
+[![Documentation](https://docs.rs/rullst-connect/badge.svg)](https://docs.rs/rullst-connect)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust Version](https://img.shields.io/badge/rustc-1.75+-lightgray.svg)](https://blog.rust-lang.org/2023/12/28/Rust-1.75.0.html)
-[![CI Build](https://github.com/venelouis/rust-socialite/actions/workflows/ci.yml/badge.svg)](https://github.com/venelouis/rust-socialite/actions/workflows/ci.yml)
-[![Publish](https://github.com/venelouis/rust-socialite/actions/workflows/publish.yml/badge.svg)](https://github.com/venelouis/rust-socialite/actions)
+[![CI Build](https://github.com/venelouis/rullst-connect/actions/workflows/ci.yml/badge.svg)](https://github.com/venelouis/rullst-connect/actions/workflows/ci.yml)
+[![Publish](https://github.com/venelouis/rullst-connect/actions/workflows/publish.yml/badge.svg)](https://github.com/venelouis/rullst-connect/actions)
 [![Audit: 10/10](https://img.shields.io/badge/Audit-10%2F10-success.svg)](AUDIT.md)
 [![Zero Panics](https://img.shields.io/badge/Panics-0-success.svg)](SECURITY_AUDIT.md)
 
-**Rust Socialite** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
+**Rullst Connect** is an elegant, async-first, and Developer Experience (DX) focused OAuth2 authentication library for Rust, heavily inspired by Laravel Socialite. It simplifies the integration of social logins into your Rust web applications, providing a standardized interface across multiple providers.
 
 ## ✨ Features
 
 - 🚀 **Async & Fast**: Built on top of `tokio` and `reqwest`.
-- 🧩 **Standardized**: All providers return a unified `SocialiteUser` struct.
-- 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`SocialiteError`).
+- 🧩 **Standardized**: All providers return a unified `ConnectUser` struct.
+- 🛡️ **Type-Safe**: Robust error handling using `thiserror` (`ConnectError`).
 - 🔌 **Framework Agnostic**: Works seamlessly with Rullst, Axum, Actix, Leptos, Dioxus, or any other framework.
 
 > 📚 **Important Documents:**
@@ -68,13 +68,13 @@ Add the package to your `Cargo.toml`. If you use **Rullst**, **Axum**, **Actix**
 
 You can either run:
 ```bash
-cargo add rust-socialite
+cargo add rullst-connect
 ```
 
 Or manually add it to your `Cargo.toml`:
 ```toml
 [dependencies]
-rust-socialite = "5.2.3"
+rullst-connect = "5.2.3"
 tokio = { version = "1.52", features = ["full"] }
 ```
 
@@ -84,7 +84,7 @@ tokio = { version = "1.52", features = ["full"] }
 Choose your provider and pass your credentials and callback URL:
 
 ```rust
-use rust_socialite::prelude::*;
+use rullst_connect::prelude::*;
 
 let github = GithubProvider::new(
     "YOUR_CLIENT_ID".to_string(),
@@ -102,7 +102,7 @@ let url = github.redirect_url();
 ```
 
 ### 3. Handle the Callback & Get User
-When the user returns to your callback URL with a `code` query parameter, exchange it for a `SocialiteUser`:
+When the user returns to your callback URL with a `code` query parameter, exchange it for a `ConnectUser`:
 
 ```rust
 match github.get_user(code).await {
@@ -146,7 +146,7 @@ println!("New Access Token: {}", refreshed_user.access_token);
 Some providers like **X (Twitter) v2** strictly require PKCE (Proof Key for Code Exchange). We provide a built-in helper for this.
 
 ```rust
-use rust_socialite::pkce::generate_pkce;
+use rullst_connect::pkce::generate_pkce;
 
 // 1. Generate challenge and verifier
 let (code_verifier, code_challenge) = generate_pkce();

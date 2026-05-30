@@ -1,7 +1,7 @@
 use crate::client::HttpClientExt;
-use crate::error::SocialiteError;
+use crate::error::ConnectError;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -24,7 +24,7 @@ impl Provider for StripeProvider {
         )
     }
 
-    async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -42,11 +42,11 @@ impl Provider for StripeProvider {
 
         let stripe_user_id = token_res["stripe_user_id"]
             .as_str()
-            .ok_or_else(|| SocialiteError::Token("Failed to get stripe_user_id".to_string()))?;
+            .ok_or_else(|| ConnectError::Token("Failed to get stripe_user_id".to_string()))?;
 
         let access_token = token_res["access_token"]
             .as_str()
-            .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
+            .ok_or_else(|| ConnectError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
         if user.id.is_empty() {
@@ -64,7 +64,7 @@ impl Provider for StripeProvider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, SocialiteError> {
+    ) -> Result<ConnectUser, ConnectError> {
         // Fetch account details using the connected account ID (or just /v1/account for the current token owner)
         let user_res = self
             .http_client
@@ -81,7 +81,7 @@ impl Provider for StripeProvider {
             .or_else(|| user_res["settings"]["dashboard"]["display_name"].as_str())
             .unwrap_or("");
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: user_res["id"].as_str().unwrap_or("").to_string(),
             name: name.to_string(),
             email: user_res["email"].as_str().map(|s: &str| s.to_string()),
@@ -100,7 +100,7 @@ impl Provider for StripeProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -118,14 +118,14 @@ impl Provider for StripeProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

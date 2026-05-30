@@ -1,15 +1,15 @@
-//! The Rust Socialite Prelude
+//! The Rullst Connect Prelude
 //!
 //! A convenient module to import everything you need to authenticate users via OAuth2.
 //!
 //! ```rust,ignore
-//! use rust_socialite::prelude::*;
+//! use rullst_connect::prelude::*;
 //! ```
 
-pub use crate::error::SocialiteError;
+pub use crate::error::ConnectError;
 pub use crate::provider::Provider;
 pub use crate::providers::*;
-pub use crate::user::SocialiteUser;
+pub use crate::user::ConnectUser;
 
 #[cfg(any(feature = "axum", feature = "actix"))]
 pub use crate::extractors::AuthCallback;

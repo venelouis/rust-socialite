@@ -1,7 +1,7 @@
 use crate::client::HttpClientExt;
-use crate::error::SocialiteError;
+use crate::error::ConnectError;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -24,7 +24,7 @@ impl Provider for BasecampProvider {
         )
     }
 
-    async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -42,7 +42,7 @@ impl Provider for BasecampProvider {
 
         let access_token = token_res["access_token"]
             .as_str()
-            .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
+            .ok_or_else(|| ConnectError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
         user.refresh_token = token_res["refresh_token"]
@@ -57,7 +57,7 @@ impl Provider for BasecampProvider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, SocialiteError> {
+    ) -> Result<ConnectUser, ConnectError> {
         let user_res = self
             .http_client
             .get("https://launchpad.37signals.com/authorization.json")
@@ -73,7 +73,7 @@ impl Provider for BasecampProvider {
         let last_name = identity["last_name"].as_str().unwrap_or("");
         let name = format!("{} {}", first_name, last_name).trim().to_string();
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: identity["id"]
                 .as_i64()
                 .map(|i| i.to_string())
@@ -97,7 +97,7 @@ impl Provider for BasecampProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -115,14 +115,14 @@ impl Provider for BasecampProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

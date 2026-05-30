@@ -1,8 +1,8 @@
 use thiserror::Error;
 
-/// Official errors of the Rust Socialite library
+/// Official errors of the Rullst Connect library
 #[derive(Error, Debug)]
-pub enum SocialiteError {
+pub enum ConnectError {
     #[error("HTTP request failed: {0}")]
     Reqwest(#[from] reqwest::Error),
 

@@ -1,6 +1,6 @@
 use crate::client::HttpClientExt;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -25,7 +25,7 @@ impl Provider for GithubProvider {
     async fn get_user(
         &self,
         auth_code: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         // 1. Exchange authorization code for access token
         let token_res = self
             .http_client
@@ -45,14 +45,14 @@ impl Provider for GithubProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token("Failed to get access_token".to_string())
+            crate::error::ConnectError::Token("Failed to get access_token".to_string())
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;
@@ -68,21 +68,21 @@ impl Provider for GithubProvider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         // 2. Fetch user profile
         let user_res = self
             .http_client
             .get("https://api.github.com/user")
             .header("Authorization", format!("Bearer {}", access_token))
-            .header("User-Agent", "rust-socialite") // GitHub API requires User-Agent
+            .header("User-Agent", "rullst-connect") // GitHub API requires User-Agent
             .send()
             .await?
             .error_for_status()?
             .json::<Value>()
             .await?;
 
-        // 3. Map to generic SocialiteUser
-        Ok(SocialiteUser {
+        // 3. Map to generic ConnectUser
+        Ok(ConnectUser {
             id: user_res["id"].as_i64().unwrap_or(0).to_string(),
             name: user_res["name"]
                 .as_str()
@@ -104,7 +104,7 @@ impl Provider for GithubProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -122,14 +122,14 @@ impl Provider for GithubProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

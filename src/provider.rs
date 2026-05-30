@@ -1,4 +1,4 @@
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 
 /// Helper to construct standard OAuth2 parameters to reduce boilerplate.
@@ -25,7 +25,7 @@ pub fn build_oauth_params<'a>(
     params
 }
 
-/// The core trait implemented by all OAuth2 providers in Rust Socialite.
+/// The core trait implemented by all OAuth2 providers in Rullst Connect.
 #[async_trait]
 pub trait Provider: Send + Sync {
     /// Returns the authorization URL to redirect the user to the provider's login screen.
@@ -61,11 +61,11 @@ pub trait Provider: Send + Sync {
     }
 
     /// Exchanges the authorization code for an access token and fetches the user's profile.
-    /// Returns a standardized `SocialiteUser` or a `SocialiteError`.
+    /// Returns a standardized `ConnectUser` or a `ConnectError`.
     async fn get_user(
         &self,
         auth_code: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError>;
+    ) -> Result<ConnectUser, crate::error::ConnectError>;
 
     /// Exchanges the authorization code for an access token using a PKCE `code_verifier`.
     /// Fallbacks to standard `get_user` by default. Must be overridden by PKCE-enforcing providers.
@@ -73,7 +73,7 @@ pub trait Provider: Send + Sync {
         &self,
         auth_code: &str,
         _code_verifier: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         self.get_user(auth_code).await
     }
 
@@ -82,7 +82,7 @@ pub trait Provider: Send + Sync {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError>;
+    ) -> Result<ConnectUser, crate::error::ConnectError>;
 
     /// Returns the URL used to exchange the authorization code for an access token.
     fn token_url(&self) -> String;
@@ -91,16 +91,16 @@ pub trait Provider: Send + Sync {
     async fn refresh_token(
         &self,
         _refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
-        Err(crate::error::SocialiteError::Token(
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
+        Err(crate::error::ConnectError::Token(
             "Refresh token is not supported by this provider".to_string(),
         ))
     }
 
     /// Revokes an access token (or refresh token) directly on the provider's authorization server.
     /// By default, this returns a `Token` error since not all providers support token revocation.
-    async fn revoke_token(&self, _token: &str) -> Result<(), crate::error::SocialiteError> {
-        Err(crate::error::SocialiteError::Token(
+    async fn revoke_token(&self, _token: &str) -> Result<(), crate::error::ConnectError> {
+        Err(crate::error::ConnectError::Token(
             "Token revocation is not supported by this provider".to_string(),
         ))
     }
@@ -109,8 +109,8 @@ pub trait Provider: Send + Sync {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::SocialiteError;
-    use crate::user::SocialiteUser;
+    use crate::error::ConnectError;
+    use crate::user::ConnectUser;
     use async_trait::async_trait;
 
     struct DummyProvider {
@@ -127,14 +127,14 @@ mod tests {
             "".to_string()
         }
 
-        async fn get_user(&self, _auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+        async fn get_user(&self, _auth_code: &str) -> Result<ConnectUser, ConnectError> {
             unimplemented!()
         }
 
         async fn get_user_from_token(
             &self,
             _access_token: &str,
-        ) -> Result<SocialiteUser, SocialiteError> {
+        ) -> Result<ConnectUser, ConnectError> {
             unimplemented!()
         }
     }
@@ -205,10 +205,10 @@ mod tests {
 
         assert!(result.is_err());
         match result.unwrap_err() {
-            SocialiteError::Token(msg) => {
+            ConnectError::Token(msg) => {
                 assert_eq!(msg, "Token revocation is not supported by this provider");
             }
-            _ => panic!("Expected SocialiteError::Token"),
+            _ => panic!("Expected ConnectError::Token"),
         }
     }
 }

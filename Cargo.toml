@@ -1,10 +1,10 @@
 [package]
-name = "rust-socialite"
+name = "rullst-connect"
 version = "5.2.3"
 edition = "2024"
 description = "OAuth2 Social Login for Rust web frameworks, inspired by Laravel Socialite."
 license = "MIT"
-repository = "https://github.com/venelouis/rust-socialite"
+repository = "https://github.com/venelouis/rullst-connect"
 categories = ["web-programming", "authentication"]
 keywords = ["oauth2", "socialite", "authentication", "login"]
 

@@ -1,18 +1,18 @@
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 
 /// A mock provider specifically designed for testing and TDD.
-/// It returns a pre-configured `SocialiteUser` without performing any HTTP requests.
+/// It returns a pre-configured `ConnectUser` without performing any HTTP requests.
 pub struct MockProvider {
-    mocked_user: SocialiteUser,
+    mocked_user: ConnectUser,
     mocked_url: String,
     expect_revoke_success: bool,
 }
 
 impl MockProvider {
     /// Creates a new `MockProvider` with a static user and login URL.
-    pub fn new(user: SocialiteUser, url: String) -> Self {
+    pub fn new(user: ConnectUser, url: String) -> Self {
         Self {
             mocked_user: user,
             mocked_url: url,
@@ -40,22 +40,22 @@ impl Provider for MockProvider {
     async fn get_user(
         &self,
         _auth_code: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         Ok(self.mocked_user.clone())
     }
 
     async fn get_user_from_token(
         &self,
         _access_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         Ok(self.mocked_user.clone())
     }
 
-    async fn revoke_token(&self, _token: &str) -> Result<(), crate::error::SocialiteError> {
+    async fn revoke_token(&self, _token: &str) -> Result<(), crate::error::ConnectError> {
         if self.expect_revoke_success {
             Ok(())
         } else {
-            Err(crate::error::SocialiteError::Token(
+            Err(crate::error::ConnectError::Token(
                 "Mocked revocation failure".to_string(),
             ))
         }

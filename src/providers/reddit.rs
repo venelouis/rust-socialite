@@ -1,7 +1,7 @@
 use crate::client::HttpClientExt;
-use crate::error::SocialiteError;
+use crate::error::ConnectError;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use base64::{Engine as _, engine::general_purpose};
 use serde_json::Value;
@@ -26,7 +26,7 @@ impl Provider for RedditProvider {
         )
     }
 
-    async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, ConnectError> {
         let credentials = format!("{}:{}", self.client_id, self.client_secret);
         let encoded_credentials = general_purpose::STANDARD.encode(credentials.as_bytes());
 
@@ -47,7 +47,7 @@ impl Provider for RedditProvider {
 
         let access_token = token_res["access_token"]
             .as_str()
-            .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
+            .ok_or_else(|| ConnectError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
         user.refresh_token = token_res["refresh_token"]
@@ -62,19 +62,19 @@ impl Provider for RedditProvider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, SocialiteError> {
+    ) -> Result<ConnectUser, ConnectError> {
         let user_res = self
             .http_client
             .get("https://oauth.reddit.com/api/v1/me")
             .header("Authorization", format!("Bearer {}", access_token))
-            .header("User-Agent", "rust-socialite/0.2.1")
+            .header("User-Agent", "rullst-connect/0.2.1")
             .send()
             .await?
             .error_for_status()?
             .json::<Value>()
             .await?;
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: user_res["id"].as_str().unwrap_or("").to_string(),
             name: user_res["name"].as_str().unwrap_or("").to_string(),
             email: None, // Reddit identity scope does not provide email by default
@@ -93,7 +93,7 @@ impl Provider for RedditProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -111,14 +111,14 @@ impl Provider for RedditProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

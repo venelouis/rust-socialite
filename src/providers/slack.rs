@@ -1,6 +1,6 @@
 use crate::client::HttpClientExt;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -22,7 +22,7 @@ impl Provider for SlackProvider {
     async fn get_user(
         &self,
         auth_code: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -41,7 +41,7 @@ impl Provider for SlackProvider {
         let access_token = token_res["authed_user"]["access_token"]
             .as_str()
             .ok_or_else(|| {
-                crate::error::SocialiteError::Token(
+                crate::error::ConnectError::Token(
                     "Failed to get authed_user access_token".to_string(),
                 )
             })?;
@@ -59,7 +59,7 @@ impl Provider for SlackProvider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let user_res = self
             .http_client
             .get("https://slack.com/api/users.identity")
@@ -72,7 +72,7 @@ impl Provider for SlackProvider {
 
         let user_data = &user_res["user"];
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: user_data["id"].as_str().unwrap_or("").to_string(),
             name: user_data["name"].as_str().unwrap_or("").to_string(),
             email: user_data["email"].as_str().map(|s: &str| s.to_string()),
@@ -91,7 +91,7 @@ impl Provider for SlackProvider {
     async fn refresh_token(
         &self,
         refresh_token: &str,
-    ) -> Result<SocialiteUser, crate::error::SocialiteError> {
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -109,14 +109,14 @@ impl Provider for SlackProvider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(crate::error::SocialiteError::Token(format!(
+            return Err(crate::error::ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::SocialiteError::Token(
+            crate::error::ConnectError::Token(
                 "Failed to get access_token during refresh".to_string(),
             )
         })?;

@@ -4,9 +4,9 @@ use axum::{
     response::{Html, IntoResponse, Redirect},
     routing::get,
 };
-use rust_socialite::provider::Provider;
-use rust_socialite::providers::github::GithubProvider;
-use rust_socialite::providers::google::GoogleProvider;
+use rullst_connect::provider::Provider;
+use rullst_connect::providers::github::GithubProvider;
+use rullst_connect::providers::google::GoogleProvider;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -39,7 +39,7 @@ async fn main() {
 async fn index() -> Html<&'static str> {
     Html(
         r#"
-        <h1>Rust Socialite Example</h1>
+        <h1>Rullst Connect Example</h1>
         <a href="/auth/google">Login com Google</a><br><br>
         <a href="/auth/github">Login com GitHub</a>
     "#,

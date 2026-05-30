@@ -1,6 +1,6 @@
-use crate::error::SocialiteError;
+use crate::error::ConnectError;
 use crate::provider::Provider;
-use crate::user::SocialiteUser;
+use crate::user::ConnectUser;
 use async_trait::async_trait;
 use serde_json::Value;
 
@@ -54,7 +54,7 @@ impl Provider for Auth0Provider {
         format!("https://{}/authorize?{}", self.domain, params.finish())
     }
 
-    async fn get_user(&self, auth_code: &str) -> Result<SocialiteUser, SocialiteError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -73,7 +73,7 @@ impl Provider for Auth0Provider {
 
         let access_token = token_res["access_token"]
             .as_str()
-            .ok_or_else(|| SocialiteError::Token("Failed to get access_token".to_string()))?;
+            .ok_or_else(|| ConnectError::Token("Failed to get access_token".to_string()))?;
 
         let mut user = self.get_user_from_token(access_token).await?;
         user.refresh_token = token_res["refresh_token"]
@@ -88,7 +88,7 @@ impl Provider for Auth0Provider {
     async fn get_user_from_token(
         &self,
         access_token: &str,
-    ) -> Result<SocialiteUser, SocialiteError> {
+    ) -> Result<ConnectUser, ConnectError> {
         let user_res = self
             .http_client
             .get(format!("https://{}/userinfo", self.domain))
@@ -99,7 +99,7 @@ impl Provider for Auth0Provider {
             .json::<Value>()
             .await?;
 
-        Ok(SocialiteUser {
+        Ok(ConnectUser {
             id: user_res["sub"].as_str().unwrap_or("").to_string(),
             name: user_res["name"].as_str().unwrap_or("").to_string(),
             email: user_res["email"].as_str().map(|s: &str| s.to_string()),
@@ -115,7 +115,7 @@ impl Provider for Auth0Provider {
         format!("https://{}/oauth/token", self.domain)
     }
 
-    async fn refresh_token(&self, refresh_token: &str) -> Result<SocialiteUser, SocialiteError> {
+    async fn refresh_token(&self, refresh_token: &str) -> Result<ConnectUser, ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -133,14 +133,14 @@ impl Provider for Auth0Provider {
 
         if let Some(err) = token_res["error"].as_str() {
             let err_desc = token_res["error_description"].as_str().unwrap_or("");
-            return Err(SocialiteError::Token(format!(
+            return Err(ConnectError::Token(format!(
                 "Provider returned error: {} - {}",
                 err, err_desc
             )));
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            SocialiteError::Token("Failed to get access_token during refresh".to_string())
+            ConnectError::Token("Failed to get access_token during refresh".to_string())
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;

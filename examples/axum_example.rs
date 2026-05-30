@@ -3,7 +3,7 @@ use axum::{
     response::{Html, IntoResponse},
     routing::get,
 };
-use rust_socialite::{extractors::AuthCallback, provider::Provider, providers::GoogleProvider};
+use rullst_connect::{extractors::AuthCallback, provider::Provider, providers::GoogleProvider};
 
 #[tokio::main]
 async fn main() {
@@ -19,7 +19,7 @@ async fn main() {
 }
 
 async fn home() -> Html<&'static str> {
-    Html("<h1>Rust Socialite Axum Example</h1><a href='/login'>Login with Google</a>")
+    Html("<h1>Rullst Connect Axum Example</h1><a href='/login'>Login with Google</a>")
 }
 
 async fn login() -> impl IntoResponse {
