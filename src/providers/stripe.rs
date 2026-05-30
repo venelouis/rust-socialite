@@ -61,10 +61,7 @@ impl Provider for StripeProvider {
         Ok(user)
     }
 
-    async fn get_user_from_token(
-        &self,
-        access_token: &str,
-    ) -> Result<ConnectUser, ConnectError> {
+    async fn get_user_from_token(&self, access_token: &str) -> Result<ConnectUser, ConnectError> {
         // Fetch account details using the connected account ID (or just /v1/account for the current token owner)
         let user_res = self
             .http_client

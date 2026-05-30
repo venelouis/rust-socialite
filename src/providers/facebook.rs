@@ -22,10 +22,7 @@ impl Provider for FacebookProvider {
         )
     }
 
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())

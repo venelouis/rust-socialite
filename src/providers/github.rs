@@ -22,10 +22,7 @@ impl Provider for GithubProvider {
         )
     }
 
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         // 1. Exchange authorization code for access token
         let token_res = self
             .http_client

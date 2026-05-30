@@ -23,8 +23,7 @@ pub struct HttpResponse {
 /// The trait that custom HTTP clients must implement.
 #[async_trait]
 pub trait HttpClient: Send + Sync {
-    async fn execute(&self, req: HttpRequest)
-    -> Result<HttpResponse, crate::error::ConnectError>;
+    async fn execute(&self, req: HttpRequest) -> Result<HttpResponse, crate::error::ConnectError>;
 }
 
 /// Extension trait to provide the fluent builder API (like reqwest).
@@ -152,10 +151,7 @@ impl Default for ReqwestClient {
 
 #[async_trait]
 impl HttpClient for ReqwestClient {
-    async fn execute(
-        &self,
-        req: HttpRequest,
-    ) -> Result<HttpResponse, crate::error::ConnectError> {
+    async fn execute(&self, req: HttpRequest) -> Result<HttpResponse, crate::error::ConnectError> {
         let method = match req.method.as_str() {
             "GET" => reqwest::Method::GET,
             "POST" => reqwest::Method::POST,

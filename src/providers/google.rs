@@ -22,10 +22,7 @@ impl Provider for GoogleProvider {
         )
     }
 
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         // Exchange code for token
         let token_res = self
             .http_client

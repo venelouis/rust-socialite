@@ -63,10 +63,7 @@ impl Provider for XProvider {
         Ok(user)
     }
 
-    async fn get_user_from_token(
-        &self,
-        access_token: &str,
-    ) -> Result<ConnectUser, ConnectError> {
+    async fn get_user_from_token(&self, access_token: &str) -> Result<ConnectUser, ConnectError> {
         let user_res = self
             .http_client
             .get("https://api.twitter.com/2/users/me?user.fields=profile_image_url")

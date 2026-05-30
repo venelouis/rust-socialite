@@ -62,10 +62,7 @@ pub trait Provider: Send + Sync {
 
     /// Exchanges the authorization code for an access token and fetches the user's profile.
     /// Returns a standardized `ConnectUser` or a `ConnectError`.
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError>;
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError>;
 
     /// Exchanges the authorization code for an access token using a PKCE `code_verifier`.
     /// Fallbacks to standard `get_user` by default. Must be overridden by PKCE-enforcing providers.

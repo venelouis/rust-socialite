@@ -62,10 +62,7 @@ impl Provider for VkProvider {
         Ok(user)
     }
 
-    async fn get_user_from_token(
-        &self,
-        access_token: &str,
-    ) -> Result<ConnectUser, ConnectError> {
+    async fn get_user_from_token(&self, access_token: &str) -> Result<ConnectUser, ConnectError> {
         let user_res = self
             .http_client
             .get(format!(

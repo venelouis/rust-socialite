@@ -21,10 +21,7 @@ impl Provider for SpotifyProvider {
         format!("https://accounts.spotify.com/authorize?{}", params.finish())
     }
 
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         let credentials = format!("{}:{}", self.client_id, self.client_secret);
         let encoded_credentials = general_purpose::STANDARD.encode(credentials.as_bytes());
 

@@ -37,10 +37,7 @@ impl Provider for MockProvider {
         "https://mock.provider/token".to_string()
     }
 
-    async fn get_user(
-        &self,
-        _auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, _auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         Ok(self.mocked_user.clone())
     }
 

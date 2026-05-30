@@ -52,10 +52,7 @@ impl Provider for LinearProvider {
         Ok(user)
     }
 
-    async fn get_user_from_token(
-        &self,
-        access_token: &str,
-    ) -> Result<ConnectUser, ConnectError> {
+    async fn get_user_from_token(&self, access_token: &str) -> Result<ConnectUser, ConnectError> {
         // Linear exposes user info via GraphQL
         let query = "{ viewer { id name email avatarUrl } }";
         let user_res = self

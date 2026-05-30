@@ -54,10 +54,7 @@ impl Provider for SnapchatProvider {
         Ok(user)
     }
 
-    async fn get_user_from_token(
-        &self,
-        access_token: &str,
-    ) -> Result<ConnectUser, ConnectError> {
+    async fn get_user_from_token(&self, access_token: &str) -> Result<ConnectUser, ConnectError> {
         // Need to use POST to fetch user details with GraphQL equivalent query in Snapchat API
         let query = "{ me { externalId displayName bitmoji { avatar } } }";
         let user_res = self

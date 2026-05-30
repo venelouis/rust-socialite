@@ -108,10 +108,7 @@ impl Provider for AppleProvider {
         )
     }
 
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         let client_secret = self.generate_client_secret()?;
 
         let token_res = self

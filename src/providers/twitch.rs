@@ -20,10 +20,7 @@ impl Provider for TwitchProvider {
         format!("https://id.twitch.tv/oauth2/authorize?{}", params.finish())
     }
 
-    async fn get_user(
-        &self,
-        auth_code: &str,
-    ) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn get_user(&self, auth_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
