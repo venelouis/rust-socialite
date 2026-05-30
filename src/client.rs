@@ -129,16 +129,53 @@ impl ResponseWrapper {
 
 /// The default reqwest-based implementation of `HttpClient`.
 pub struct ReqwestClient {
+    #[cfg(not(feature = "retry"))]
     client: reqwest::Client,
+    #[cfg(feature = "retry")]
+    client: reqwest_middleware::ClientWithMiddleware,
 }
 
 impl ReqwestClient {
     pub fn new() -> Self {
-        let client = reqwest::Client::builder()
+        let reqwest_client = reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(10))
             .pool_idle_timeout(std::time::Duration::from_secs(90))
             .build()
             .unwrap_or_else(|_| reqwest::Client::new());
+
+        #[cfg(feature = "retry")]
+        {
+            let retry_policy =
+                reqwest_retry::policies::ExponentialBackoff::builder().build_with_max_retries(3);
+            let client = reqwest_middleware::ClientBuilder::new(reqwest_client)
+                .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(
+                    retry_policy,
+                ))
+                .build();
+            Self { client }
+        }
+
+        #[cfg(not(feature = "retry"))]
+        Self {
+            client: reqwest_client,
+        }
+    }
+
+    #[cfg(feature = "retry")]
+    pub fn new_with_retry(max_retries: u32) -> Self {
+        let reqwest_client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .pool_idle_timeout(std::time::Duration::from_secs(90))
+            .build()
+            .unwrap_or_else(|_| reqwest::Client::new());
+
+        let retry_policy = reqwest_retry::policies::ExponentialBackoff::builder()
+            .build_with_max_retries(max_retries);
+        let client = reqwest_middleware::ClientBuilder::new(reqwest_client)
+            .with(reqwest_retry::RetryTransientMiddleware::new_with_policy(
+                retry_policy,
+            ))
+            .build();
         Self { client }
     }
 }
@@ -158,30 +195,79 @@ impl HttpClient for ReqwestClient {
             _ => reqwest::Method::GET,
         };
 
-        let mut builder = self.client.request(method, &req.url);
+        #[cfg(not(feature = "retry"))]
+        let res = {
+            let mut builder = self.client.request(method, &req.url);
 
-        for (k, v) in &req.headers {
-            builder = builder.header(k, v);
-        }
+            for (k, v) in &req.headers {
+                builder = builder.header(k, v);
+            }
 
-        if let Some(token) = &req.bearer_auth {
-            builder = builder.bearer_auth(token);
-        }
+            if let Some(token) = &req.bearer_auth {
+                builder = builder.bearer_auth(token);
+            }
 
-        if let Some((user, pass)) = &req.basic_auth {
-            builder = builder.basic_auth(user, pass.as_deref());
-        }
+            if let Some((user, pass)) = &req.basic_auth {
+                builder = builder.basic_auth(user, pass.as_deref());
+            }
 
-        if !req.form.is_empty() {
-            builder = builder.form(&req.form);
-        } else if let Some(j) = &req.json {
-            builder = builder.json(j);
-        }
+            if !req.form.is_empty() {
+                builder = builder.form(&req.form);
+            } else if let Some(j) = &req.json {
+                builder = builder.json(j);
+            }
 
-        let res = builder.send().await?;
+            builder
+                .send()
+                .await
+                .map_err(crate::error::ConnectError::Reqwest)?
+        };
+
+        #[cfg(feature = "retry")]
+        let res = {
+            let mut builder = self.client.request(method, &req.url);
+
+            for (k, v) in &req.headers {
+                builder = builder.header(k, v);
+            }
+
+            if let Some(token) = &req.bearer_auth {
+                builder = builder.bearer_auth(token);
+            }
+
+            if let Some((user, pass)) = &req.basic_auth {
+                builder = builder.basic_auth(user, pass.as_deref());
+            }
+
+            if !req.form.is_empty() {
+                // reqwest_middleware::RequestBuilder doesn't have `.form()`, we set body and headers manually
+                let body = serde_urlencoded::to_string(&req.form).unwrap_or_default();
+                builder = builder.body(body).header(
+                    reqwest::header::CONTENT_TYPE,
+                    "application/x-www-form-urlencoded",
+                );
+            } else if let Some(j) = &req.json {
+                // reqwest_middleware::RequestBuilder doesn't have `.json()`, we set body and headers manually
+                let body = serde_json::to_string(j).unwrap_or_default();
+                builder = builder
+                    .body(body)
+                    .header(reqwest::header::CONTENT_TYPE, "application/json");
+            }
+
+            builder.send().await.map_err(|e| {
+                if let reqwest_middleware::Error::Reqwest(err) = e {
+                    crate::error::ConnectError::Reqwest(err)
+                } else {
+                    crate::error::ConnectError::Provider(e.to_string())
+                }
+            })?
+        };
         let status = res.status().as_u16();
         // Read body as text first in case it's not JSON
-        let text = res.text().await?;
+        let text = res
+            .text()
+            .await
+            .map_err(crate::error::ConnectError::Reqwest)?;
         let body = serde_json::from_str(&text).unwrap_or(Value::String(text));
 
         Ok(HttpResponse { status, body })
