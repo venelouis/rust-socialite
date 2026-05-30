@@ -36,12 +36,11 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        build-mode: none
         # If you have custom queries, specify them here
         # queries: security-extended,security-and-quality
 
-    - name: Build Rust code
-      run: cargo build --all-targets --all-features
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
