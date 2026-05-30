@@ -60,6 +60,14 @@ macro_rules! define_provider {
                 self.http_client = client;
                 self
             }
+
+            /// Configures the built-in HTTP client to use exponential backoff retries.
+            /// This is only available when the `retry` feature is enabled.
+            #[cfg(feature = "retry")]
+            pub fn with_retry(mut self, max_retries: u32) -> Self {
+                self.http_client = ::std::sync::Arc::new($crate::client::ReqwestClient::new_with_retry(max_retries));
+                self
+            }
         }
     };
 }
