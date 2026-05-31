@@ -140,7 +140,9 @@ impl Provider for GithubProvider {
         Ok(user)
     }
 
-    async fn request_device_code(&self) -> Result<crate::user::DeviceAuthorizationResponse, crate::error::ConnectError> {
+    async fn request_device_code(
+        &self,
+    ) -> Result<crate::user::DeviceAuthorizationResponse, crate::error::ConnectError> {
         let mut form = vec![("client_id", self.client_id.as_str())];
         let scopes = self.scopes.join(" ");
         if !scopes.is_empty() {
@@ -162,13 +164,18 @@ impl Provider for GithubProvider {
             device_code: res["device_code"].as_str().unwrap_or("").to_string(),
             user_code: res["user_code"].as_str().unwrap_or("").to_string(),
             verification_uri: res["verification_uri"].as_str().unwrap_or("").to_string(),
-            verification_uri_complete: res["verification_uri_complete"].as_str().map(|s| s.to_string()),
+            verification_uri_complete: res["verification_uri_complete"]
+                .as_str()
+                .map(|s| s.to_string()),
             expires_in: res["expires_in"].as_u64().unwrap_or(900),
             interval: res["interval"].as_u64(),
         })
     }
 
-    async fn poll_device_token(&self, device_code: &str) -> Result<ConnectUser, crate::error::ConnectError> {
+    async fn poll_device_token(
+        &self,
+        device_code: &str,
+    ) -> Result<ConnectUser, crate::error::ConnectError> {
         let token_res = self
             .http_client
             .post(self.token_url())
@@ -193,7 +200,10 @@ impl Provider for GithubProvider {
         }
 
         let access_token = token_res["access_token"].as_str().ok_or_else(|| {
-            crate::error::ConnectError::Token("Failed to get access_token during device poll. (Authorization pending?)".to_string())
+            crate::error::ConnectError::Token(
+                "Failed to get access_token during device poll. (Authorization pending?)"
+                    .to_string(),
+            )
         })?;
 
         let mut user = self.get_user_from_token(access_token).await?;

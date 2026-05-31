@@ -16,7 +16,6 @@ pub mod provider;
 pub mod providers;
 pub mod user;
 
-
 pub use error::ConnectError;
 
 pub use provider::Provider;

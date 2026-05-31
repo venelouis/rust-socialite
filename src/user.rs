@@ -36,7 +36,7 @@ pub struct ConnectUser {
 use async_trait::async_trait;
 
 /// Helper trait to seamlessly integrate `ConnectUser` with databases and ORMs (like SQLx, Diesel, rullst-orm).
-/// By implementing this trait on your custom database User model or repository, you can easily 
+/// By implementing this trait on your custom database User model or repository, you can easily
 /// save or update users directly from the OAuth profile.
 #[async_trait]
 pub trait IntoDatabaseUser<T> {

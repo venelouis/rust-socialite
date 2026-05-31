@@ -23,11 +23,11 @@
 - 🛠️ **Testing**: Embedded Mock IdP router for seamless offline local E2E testing.
 
 > 📚 **Important Documents:**
-> - [CHANGELOG.md](CHANGELOG.md): See what's new in v6.1.0.
+> - [CHANGELOG.md](CHANGELOG.md): See what's new in v6.1.1.
 > - [ROADMAP.md](ROADMAP.md): Discover our path to v1.0.0.
 > - [AUDIT.md](AUDIT.md): Complete security, performance, and maintainability audit report.
 
-## 📦 Supported Providers (v6.1.0)
+## 📦 Supported Providers (v6.1.1)
 
 Official support for 33 major providers:
 
@@ -77,7 +77,7 @@ cargo add rullst-connect
 Or manually add it to your `Cargo.toml`:
 ```toml
 [dependencies]
-rullst-connect = "6.1.0"
+rullst-connect = "6.1.1"
 tokio = { version = "1.52", features = ["full"] }
 ```
 

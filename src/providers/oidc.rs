@@ -47,17 +47,23 @@ impl OidcProvider {
 
         let authorization_endpoint = res["authorization_endpoint"]
             .as_str()
-            .ok_or_else(|| ConnectError::Provider("Missing authorization_endpoint in OIDC config".to_string()))?
+            .ok_or_else(|| {
+                ConnectError::Provider("Missing authorization_endpoint in OIDC config".to_string())
+            })?
             .to_string();
 
         let token_endpoint = res["token_endpoint"]
             .as_str()
-            .ok_or_else(|| ConnectError::Provider("Missing token_endpoint in OIDC config".to_string()))?
+            .ok_or_else(|| {
+                ConnectError::Provider("Missing token_endpoint in OIDC config".to_string())
+            })?
             .to_string();
 
         let userinfo_endpoint = res["userinfo_endpoint"]
             .as_str()
-            .ok_or_else(|| ConnectError::Provider("Missing userinfo_endpoint in OIDC config".to_string()))?
+            .ok_or_else(|| {
+                ConnectError::Provider("Missing userinfo_endpoint in OIDC config".to_string())
+            })?
             .to_string();
 
         let jwks_uri = res["jwks_uri"]
@@ -84,7 +90,11 @@ impl OidcProvider {
             client_secret,
             redirect_url,
             http_client: client,
-            scopes: vec!["openid".to_string(), "profile".to_string(), "email".to_string()],
+            scopes: vec![
+                "openid".to_string(),
+                "profile".to_string(),
+                "email".to_string(),
+            ],
             state: None,
             pkce_challenge: None,
             authorization_endpoint,
@@ -170,7 +180,9 @@ impl Provider for OidcProvider {
                                 id: payload["sub"].as_str().unwrap_or("").to_string(),
                                 name: payload["name"].as_str().unwrap_or("").to_string(),
                                 email: payload["email"].as_str().map(|s: &str| s.to_string()),
-                                avatar_url: payload["picture"].as_str().map(|s: &str| s.to_string()),
+                                avatar_url: payload["picture"]
+                                    .as_str()
+                                    .map(|s: &str| s.to_string()),
                                 email_verified: payload["email_verified"].as_bool(),
                                 raw_data: payload,
                                 access_token: access_token.to_string(),
@@ -194,7 +206,9 @@ impl Provider for OidcProvider {
         };
 
         user.refresh_token = token_res["refresh_token"].as_str().map(|s| s.to_string());
-        user.expires_in = token_res["expires_in"].as_u64().or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
+        user.expires_in = token_res["expires_in"]
+            .as_u64()
+            .or_else(|| token_res["expires_in"].as_i64().map(|v| v as u64));
 
         Ok(user)
     }

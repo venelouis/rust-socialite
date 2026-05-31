@@ -6,10 +6,10 @@
 
 #[cfg(feature = "axum")]
 use axum::{
+    Json, Router,
     extract::{Form, Query},
     response::{IntoResponse, Redirect},
     routing::{get, post},
-    Json, Router,
 };
 #[cfg(feature = "axum")]
 use base64::Engine;

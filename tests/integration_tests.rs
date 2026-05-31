@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use rullst_connect::error::ConnectError;
 use rullst_connect::client::{HttpClient, HttpRequest, HttpResponse};
+use rullst_connect::error::ConnectError;
 use rullst_connect::provider::Provider;
 use rullst_connect::providers::GithubProvider;
 use wiremock::matchers::{method, path};

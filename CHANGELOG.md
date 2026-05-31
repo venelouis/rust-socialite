@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [6.1.1] - 2026-05-30
+
+### Fixed
+- **Formatting Cleanup**: Reflowed several Rust modules to satisfy `cargo fmt -- --check` and keep CI green.
+- **Publish Workflow**: Corrected the crates.io tag filter and added manual workflow dispatch for releases.
+- **Release Documentation**: Added a dedicated release guide and aligned the README with the publish flow.
+
 ## [6.1.0] - 2026-05-30
 
 ### Added

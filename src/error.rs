@@ -22,10 +22,7 @@ pub enum ConnectError {
     Token(String),
 
     #[error("Provider API Error ({code}): {message}")]
-    ProviderApiError {
-        code: String,
-        message: String,
-    },
+    ProviderApiError { code: String, message: String },
 
     #[error("Provider specific error: {0}")]
     Provider(String),

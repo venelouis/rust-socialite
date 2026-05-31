@@ -70,8 +70,12 @@ impl Provider for DiscordProvider {
 
         let id = user_res["id"].as_str().unwrap_or("").to_string();
         let avatar_hash = user_res["avatar"].as_str();
-        let avatar_url = avatar_hash
-            .map(|hash| format!("https://cdn.discordapp.com/avatars/{}/{}.png?size=1024", id, hash));
+        let avatar_url = avatar_hash.map(|hash| {
+            format!(
+                "https://cdn.discordapp.com/avatars/{}/{}.png?size=1024",
+                id, hash
+            )
+        });
 
         Ok(ConnectUser {
             id,

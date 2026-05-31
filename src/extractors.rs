@@ -106,7 +106,9 @@ where
 
         if let Some(state_param) = &callback.state {
             let session_state: Option<String> = session.get("oauth_state").await.unwrap_or(None);
-            if let Some(saved) = session_state && state_param == &saved {
+            if let Some(saved) = session_state
+                && state_param == &saved
+            {
                 // Valid! Remove it so it can't be reused
                 let _ = session.remove::<String>("oauth_state").await;
                 return Ok(Self { callback });
