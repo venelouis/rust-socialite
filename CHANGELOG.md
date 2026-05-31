@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.2] - 2026-05-31
+
+### Changed
+- **Dependency Updates**: All direct dependencies updated to their latest stable versions:
+  - `rand` `0.8` → `0.10.1`
+  - `reqwest` `0.13.3` → `0.13.4`
+  - `actix-web` `4.9.0` → `4.13.0`
+  - `tower-sessions` `0.13.0` → `0.15.0`
+  - `wiremock` `0.6.2` → `0.6.5` (dev)
+
+### Internal
+- **rand 0.10 Migration** (`src/pkce.rs`): Updated PKCE code to the new `rand 0.10` API — replaced `distributions::Alphanumeric` with `distr::Alphanumeric`, `thread_rng()` with `rng()`, and imported `RngExt` trait for `sample_iter` support.
+
 ## [6.1.1] - 2026-05-30
 
 ### Fixed
