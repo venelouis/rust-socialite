@@ -23,6 +23,10 @@ First off, thank you for considering contributing to `rullst-connect`! It's peop
 3. Submit a Pull Request targeting the `main` branch.
 4. Wait for a maintainer to review your PR. We might suggest some changes or improvements.
 
+## Releasing
+
+The release checklist lives in [RELEASING.md](RELEASING.md). It covers `cargo-release`, tag-based publishing, and the manual GitHub Actions fallback.
+
 ## Code of Conduct
 
 By participating in this project, you are expected to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).

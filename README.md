@@ -174,6 +174,8 @@ cargo run --example axum_server
 ## 📦 Releasing a New Version
 
 This project uses `cargo-release` to automate version bumps, README synchronization, and CHANGELOG management.
+The publish workflow in `.github/workflows/publish.yml` runs when a `vX.Y.Z` tag is pushed, and it can also be triggered manually from GitHub Actions.
+
 To release a new version, simply run:
 
 ```bash
@@ -183,7 +185,9 @@ cargo release minor --execute  # for v1.x.0 features
 cargo release major --execute  # for vX.0.0 breaking changes
 ```
 
-This will automatically bump versions, tag the release, and push to GitHub, triggering our CI publish workflow.
+This will automatically bump versions, tag the release, and push to GitHub, triggering the crates.io publish workflow.
+
+For the exact release checklist and what to do next time, see [RELEASING.md](RELEASING.md).
 
 ## 🤝 Contributing
 
