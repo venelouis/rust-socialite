@@ -66,13 +66,17 @@ impl Provider for TwitchProvider {
             .json::<Value>()
             .await?;
 
-        if !user_res["data"].is_array() || user_res["data"].as_array().unwrap().is_empty() {
+        let user_data_array = user_res["data"].as_array().ok_or_else(|| {
+            crate::error::ConnectError::Provider("No user data returned".to_string())
+        })?;
+
+        if user_data_array.is_empty() {
             return Err(crate::error::ConnectError::Provider(
                 "No user data returned".to_string(),
             ));
         }
 
-        let user_data = &user_res["data"][0];
+        let user_data = &user_data_array[0];
 
         Ok(ConnectUser {
             id: user_data["id"].as_str().unwrap_or("").to_string(),

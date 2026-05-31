@@ -17,7 +17,7 @@ pub struct CognitoProvider {
 }
 
 impl CognitoProvider {
-    /// Note: domain should be the full base url, e.g., "https://my-domain.auth.us-east-1.amazoncognito.com"
+    /// Note: domain should be the full base url, e.g., <https://my-domain.auth.us-east-1.amazoncognito.com>
     pub fn new(
         client_id: String,
         client_secret: String,

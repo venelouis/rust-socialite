@@ -12,7 +12,9 @@ use axum::{
     Json, Router,
 };
 #[cfg(feature = "axum")]
-use serde::{Deserialize, Serialize};
+use base64::Engine;
+#[cfg(feature = "axum")]
+use serde::Deserialize;
 #[cfg(feature = "axum")]
 use serde_json::json;
 

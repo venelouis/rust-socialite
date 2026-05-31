@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use rullst_connect::error::ConnectError;
 use rullst_connect::client::{HttpClient, HttpRequest, HttpResponse};
 use rullst_connect::provider::Provider;
 use rullst_connect::providers::GithubProvider;
@@ -114,6 +115,10 @@ async fn test_github_token_error() {
 
     let err = provider.get_user("bad_code").await.unwrap_err();
 
-    // Using string matching since ConnectError implements Display but maybe not PartialEq
-    assert!(err.to_string().contains("HTTP Error: 400"));
+    assert!(matches!(
+        err,
+        ConnectError::ProviderApiError { ref code, ref message }
+            if code == "invalid_grant"
+                && message == "The code passed is incorrect or expired."
+    ));
 }
